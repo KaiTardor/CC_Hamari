@@ -11,7 +11,7 @@ Este proyecto consiste en desarrollar una aplicación que permita a la empresa H
 
 ## Hito 1
 - [Descripción detallada del proyecto](./docs/hito1.md)
-    - Objetivos y tecnologias empleadas 
+    - Objetivos, problemas y tecnologias empleadas 
 - [Licencia](./LICENSE)
     - Revisión de los términos y condiciones 
 
