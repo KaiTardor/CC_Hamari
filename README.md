@@ -16,6 +16,9 @@ Este proyecto consiste en desarrollar una aplicación que permita a la empresa H
     - Revisión de los términos y condiciones 
 
 ## Hito 2
+- [Integración continua](./docs/hito2.md)
+    - Configuración del gestor de tareas
+    - Uso de biblioteca de aserciones y marco de pruebas
 
 ## Hito 3
 

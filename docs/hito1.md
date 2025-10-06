@@ -1,6 +1,6 @@
 # Hito 1
 
-*Version 0.1*
+*Version 0.2*
 
 <img src="../imgs/mision.png" alt="Misión empresa" style="width:50%;">
 
@@ -44,8 +44,8 @@ Al mismo tiempo, dicha plataforma sirve como un espacio para proveedores pequeñ
 
 *Tecnologías aplicadas*
 
-* Frontend: Interfaz web simple (por determinar)
+* Frontend: Interfaz web simple (React?)
 
 * Backend: Flask (?)
 
-* Dase de datos: Basado en la nube (por determinar)
+* Dase de datos: Basado en la nube (mongoDB?)
