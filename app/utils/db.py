@@ -59,84 +59,70 @@ def seed():
         {"dni": s1, 
          "name": "Mario", 
          "surname": "Casas Perez", 
-         "role": "staff",
-        "email": "mario@hamari.com"
+         "email": "mario@hamari.com", 
+         "phone": "634567890"
     },
         {"dni": s2, 
          "name": "Marina", 
          "surname": "Ruiz Palomino", 
-         "role": "staff",
-        "email": "marina@hamari.com"
+         "email": "marina@hamari.com", 
+         "phone": "645678901"
     }
     ])
 
     # Ofertas disponibles
 
     offer_docs = [
-        {"id_" : ObjectId(),
+        {"_id" : ObjectId(),
          "provider_dni": p1,
          "title": "Conexiones con el cielo y la noche", 
          "description": "texto texto texto textotexto textotextotextotextotextotexto texto texto texto", 
          "price": 200.00, 
          "people_included": 10,
-         "valid_date": Date(2025, 10, 15).strftime("%d/%m/%Y"),
-         "available": {"from": "01/11/2025", "to": "15/01/2026"},
+         "available_from": "01/11/2025",
+         "available_to":   "15/01/2026",
+         "daily_capacity": 10,
          "is_active": True},
-        {"id_" : ObjectId(),
+        {"_id" : ObjectId(),
          "provider_dni": p1,
          "title": "Gula saciada", 
          "description": "aaaaa aaa aaaa aaaaa aaaaa aaaaa aaaaa aaaaa aaaaa aaaaa aaaaa aaaaa aaaaa", 
          "price": 150.00, 
          "people_included": 4,
          "valid_date": Date(2025, 11, 1).strftime("%d/%m/%Y"),
-         "available": {"from": "15/11/2025", "to": "15/12/2025"},
+         "available_from": "15/11/2025",
+         "available_to": "15/12/2025",
+         "daily_capacity": 5,
          "is_active": True
         },
     ]
 
     db.offers.insert_many(offer_docs)
 
-    # Inventario diario por oferta
-    DEFAULT_CAPACITY = 10
+    # Existencias 
     inventory_bulk = []
     for off in offer_docs:
-        from_d = off["available"]["from"]
-        to_d   = off["available"]["to"]
-        for d in daterange(from_d, to_d):
+        for d in daterange(off["available_from"], off["available_to"]):
             inventory_bulk.append({
                 "offer_id": off["_id"],
-                "date": d,                 # "DD/MM/AAAA"
-                "capacity": DEFAULT_CAPACITY,
+                "date": d,
+                "capacity": off["daily_capacity"],
                 "booked": 0
             })
-
     if inventory_bulk:
         db.offer_inventory.insert_many(inventory_bulk)
 
-    # Reservas
+    # Reservas de ejemplo (1 plaza cada una)
     db.bookings.insert_many([
-        {
-            "offer_id": offer_docs[0]["_id"],
-            "client_dni": c1,
-            "people": 2,
-            "date": "02/11/2025",
-            "status": "PENDING"
-        },
-        {
-            "offer_id": offer_docs[1]["_id"],
-            "client_dni": c2,
-            "people": 4,
-            "date": "20/11/2025",
-            "status": "CONFIRMED"
-        }
+        {"offer_id": offer_docs[0]["_id"], "client_dni": c1, "date": "02/11/2025", "status": "PENDING"},
+        {"offer_id": offer_docs[1]["_id"], "client_dni": c2, "date": "20/11/2025", "status": "CONFIRMED"},
     ])
-
     db.offer_inventory.update_one(
         {"offer_id": offer_docs[0]["_id"], "date": "02/11/2025"},
-        {"$inc": {"booked": 2}}
+        {"$inc": {"booked": 1}}
     )
     db.offer_inventory.update_one(
-        {"offer_id": offer_docs[1]["_id"], "date": "05/11/2025"},
+        {"offer_id": offer_docs[1]["_id"], "date": "20/11/2025"},
         {"$inc": {"booked": 1}}
     )
 
