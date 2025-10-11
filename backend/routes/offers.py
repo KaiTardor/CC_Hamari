@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
-from .. import mongo
+from backend import mongo
 from ..utils.utils import *
 from ..utils.dates import *
 

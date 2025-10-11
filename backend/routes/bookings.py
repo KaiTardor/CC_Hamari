@@ -1,8 +1,8 @@
 from flask import Blueprint, request, jsonify
 from bson import ObjectId
 from pymongo import ReturnDocument
-from .. import mongo
-from app.utils.utils import *
+from backend import mongo
+from backend.utils.utils import *
 
 
 bookings_bp = Blueprint('bookings', __name__)

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from .. import mongo
+from backend import mongo
 from ..utils.utils import * 
 
 clients_bp = Blueprint('clients', __name__)
