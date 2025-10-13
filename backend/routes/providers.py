@@ -8,11 +8,13 @@ providers_bp = Blueprint('providers', __name__)
 def create_provider():
     """ 
     Crea un nuevo proveedor
+    Informacion esperada: dni, company_name, email, phone
+    Campos opcionales: contact_name, contact_surname
     """
     data = request.get_json(force=True)
-    if "dni" not in data or "company_name" not in data or "email" not in data:
-        return jsonify({"error": "DNI, nombre de empresa y email son obligatorios"}), 400
-    
+    if "dni" not in data or "company_name" not in data or "email" not in data or "phone" not in data:
+        return jsonify({"error": "DNI, nombre de empresa, email y teléfono son obligatorios"}), 400
+
     if "email" not in data and data["email"] and not is_valid_email(data["email"]):
         return jsonify({"error": "Email no válido"}), 400
     if "phone" in data and data["phone"] and not is_valid_phone(data["phone"]):
@@ -31,13 +33,16 @@ def create_provider():
         "phone": data.get("phone")
     }
 
+    if mongo.db.providers.find_one({"dni": doc["dni"]}):
+        return jsonify({"error": "El proveedor ya existe"}), 400
+
     mongo.db.providers.insert_one(doc)
     return jsonify({"message": "Proveedor creado", "dni": data["dni"]}), 201
 
 @providers_bp.route('/', methods=['GET'])
 def list_providers():
     """ 
-    Devuelve la lista de proveedores
+    Listar todos los proveedores
     """
     docs = list(mongo.db.providers.find(), {"_id": 0})
     return jsonify(docs)

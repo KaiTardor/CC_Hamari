@@ -1,5 +1,7 @@
-# creacion de indices en mongo
 def index(mongo):
+    """
+    Crear índices en las colecciones de la base de datos.
+    """
     db = mongo.db
 
     # identificadores únicos

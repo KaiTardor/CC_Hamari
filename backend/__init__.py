@@ -9,7 +9,9 @@ mongo = PyMongo()
 
 
 def create_app():
-    """Crea e inicializa la app Flask principal"""
+    """
+    Crea e inicializa la app Flask principal
+    """
     app = Flask(__name__)
     app.config.from_object(Config)
 
@@ -18,6 +20,7 @@ def create_app():
 
     # Inicializar MongoDB
     mongo.init_app(app)
+    app.mongo = mongo
     index(mongo)
 
     # Importar y registrar Blueprints
@@ -26,11 +29,14 @@ def create_app():
     from .routes.clients import clients_bp
     from .routes.providers import providers_bp
     from .routes.staff import staff_bp
+    from .routes.auth import auth_bp
 
     app.register_blueprint(offers_bp, url_prefix="/api/offers")
     app.register_blueprint(bookings_bp, url_prefix="/api/bookings")
     app.register_blueprint(clients_bp, url_prefix="/api/clients")
     app.register_blueprint(providers_bp, url_prefix="/api/providers")
+    app.register_blueprint(auth_bp, url_prefix="/api/auth")
+
     app.register_blueprint(staff_bp, url_prefix="/api/staff")
 
     # Ruta raíz para verificar que el backend funciona

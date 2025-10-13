@@ -1,5 +1,3 @@
-# Crear base de datos 
-
 from datetime import datetime
 from datetime import date as Date
 from bson import ObjectId
@@ -8,6 +6,8 @@ from flask_pymongo import PyMongo
 from ..config import Config
 from .utils import *
 from .dates import *
+from werkzeug.security import generate_password_hash
+
 
 def seed():
     # Crear BD simplificada de ejemplo
@@ -131,6 +131,8 @@ def seed():
     print("   Clients DNI :", c1, c2)
     print("   Offers IDs  :", [str(doc["_id"]) for doc in offer_docs])
     print("   Inventario  :", len(inventory_bulk), "días generados")
+
+    #seed_users(db)
 
 if __name__ == "__main__":
     seed()

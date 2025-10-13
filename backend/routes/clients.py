@@ -2,15 +2,23 @@ from flask import Blueprint, request, jsonify
 from backend import mongo
 from ..utils.utils import * 
 
+
 clients_bp = Blueprint('clients', __name__)
+
 
 @clients_bp.route("/", methods=["POST"])
 def create_client():
+    """
+    Crear un nuevo cliente.
+    Informacion esperada: dni, name, surname, phone, email. 
+    Campos opcionales: sex, birth_date.
+    """
     data = request.get_json(force=True)
     required = ["dni", "name", "surname", "phone", "email"]
     if any(k not in data for k in required):
         return jsonify({"error": "Faltan campos obligatorios. Los campos requeridos son: " + ", ".join(required)}), 400
     
+    # Validaciones de formato
     if "email" not in data and data["email"] and not is_valid_email(data["email"]):
         return jsonify({"error": "Email no válido"}), 400
     if "phone" in data and data["phone"] and not is_valid_phone(data["phone"]):
@@ -33,11 +41,17 @@ def create_client():
 
 @clients_bp.route("/", methods=["GET"])
 def list_clients():
+    """
+    Listar todos los clientes
+    """
     clients = list(mongo.db.clients.find({}, {"_id": 0}))
     return jsonify(clients), 200
 
 @clients_bp.route("/<dni>", methods=["GET"])
 def client_detail(dni):
+    """
+    Devolver detalles de un cliente por DNI identificado.
+    """
     doc = mongo.db.clients.find_one({"dni": normalize_dni(dni)}, {"_id": 0})
     if not doc:
         return jsonify({"error": "Cliente no encontrado"}), 404
@@ -45,6 +59,9 @@ def client_detail(dni):
 
 @clients_bp.route("/<dni>", methods=["PUT", "PATCH"])
 def update_client(dni):
+    """
+    Actualizar informacion de un cliente concreto.
+    """
     data = request.get_json(force=True)
     if "email" in data and not is_valid_email(data["email"]):
         return jsonify({"error": "Email no válido"}), 400
@@ -66,6 +83,9 @@ def update_client(dni):
 
 @clients_bp.route("/<dni>", methods=["DELETE"])
 def delete_client(dni):
+    """
+    Eliminar un cliente y sus reservas asociadas .
+    """
     res = mongo.db.clients.delete_one({"dni": normalize_dni(dni)})
     if res.deleted_count == 0:
         return jsonify({"error": "Cliente no encontrado"}), 404
