@@ -13,24 +13,24 @@ En caso de querer probar solo el backend fuera de Docker, se puede crear un ento
 
 ### 2.1) Comandos utiles:
 - Activar el entorno virtual
-"""
+```
 source venv/bin/activate
-"""
+```
 
 - Desactivar el entorno
-""" 
+``` 
 deactivate
-"""
+```
 
 - Uso del script
-"""
+```
 bash deploy.bash
-"""
+```
 
 - Instalar o actualizar las dependencias
-"""
+```
 pip install -r requirements.txt
-"""
+```
 
 ## 3) Ejecución con Docker Compose
 Este proyecto define tres servicios en docker-compose.yml:
@@ -40,29 +40,29 @@ Este proyecto define tres servicios en docker-compose.yml:
 
 ### 3.1) Comandos útiles:
 - Build de imágenes
-"""
+```
 docker compose -build
-"""
+```
 
 - Levantar el servicio
-"""
+```
 docker compose up -d
-"""
+```
 
 - Parar el contenedor:
-"""
+```
 docker compose down
-"""
+```
 
 - Parar el contenedor y limpiar los datos persistidos
-"""
+```
 docker compose down -v
-"""
+```
 
 - Ver el estado
-""" 
+``` 
 docker ps
-"""
+```
 
 ### 3.2) Puertos y URLs
 - MongoDB -> mongodb://localhost:27018/HamariDB
