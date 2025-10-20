@@ -44,7 +44,7 @@ def list_providers():
     """ 
     Listar todos los proveedores
     """
-    docs = list(mongo.db.providers.find(), {"_id": 0})
+    docs = list(mongo.db.providers.find({}, {"_id": 0}))
     return jsonify(docs)
 
 @providers_bp.route('/<dni>', methods=['GET'])

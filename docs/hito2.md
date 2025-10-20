@@ -51,9 +51,55 @@ inv (nombre_tarea)
  
 ## Marco de pruebas y Librería de Aserciones
 
-Tal como se ha indicado, la librería empleada en el marco de pruebas y en la librería de aserciones el **PyTest**, 
+Tal como se ha indicado, la librería empleada en el marco de pruebas y en la librería de aserciones el **PyTest**, que es una herramienta que permite verificar el comportamiento del código.
+
+### Instalación 
+Tal como el gestor de tareas, se puede instalar de forma manual mediante el comando:
+```
+sudo apt install python3-invoke
+```
+
+o mismamente, se configurar al ejecutar el fichero deploy.bash
+
+### Estructura de tareas
+Los distintos test estan dentro de la carpeta *backend/test/*:
+
+```
+backend/tests/
+├── conftest.py                
+├── test_auth.py               # Tests de autenticación y autorización
+├── test_bookings_api.py       # Tests de gestión de reservas
+├── test_offers_api.py         # Tests de gestión de ofertas
+├── test_clients_api.py        # Tests de gestión de clientes
+├── test_providers_api.py      # Tests de gestión de proveedores
+└── test_staff_api.py          # Tests de gestión de personal
+```
+
+### Uso básico
+
+Ejecutar los distintos tests:
+
+```
+python -m pytest -q
+```
+
+Ejecutar tests de un archivo específico:
+
+```
+python -m pytest backend/tests/test_auth.py -v
+```
+
+Ejecutar un test concreto:
+
+```
+python -m pytest backend/tests/test_auth.py::test_login_ok -v
+```
+
+### Anotación 
+*Algunos tests se han generado mediante el uso de Copilot, concretamente los de para verificar las operaciones CRUD de clientes, proveedores y personal*
 
 ## Gestor de integración continua
+
 
 ## Documentación adicional
 - [Gestor de tareas](./hito2/gestor_taras.md)
