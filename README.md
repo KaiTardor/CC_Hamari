@@ -16,6 +16,12 @@ Este proyecto consiste en desarrollar una aplicación que permita a la empresa H
     - Revisión de los términos y condiciones 
 
 ## Hito 2
+- [Integración continua](./docs/hito2.md)
+    - Descripción de la elección del [gestor de tareas](./docs/hito2/gestor_taras.md)
+    - Descripción de la elección de la [biblioteca de aserciones](./docs/hito2/biblioteca_aser.md)
+    - Descripción de la elección del [marco de pruebas](./docs/hito2/marco_pruebas.md)
+    - Descripción de la elección del [gestor de integración continua](./docs/hito2/gestor_ic.md)
+- [Requisitos y uso del repositorio](./docs/requisitos.md)
 
 ## Hito 3
 

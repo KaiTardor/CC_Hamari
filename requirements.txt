@@ -1,1 +1,12 @@
-
+Flask
+Flask-PyMongo
+pymongo
+Flask-Cors
+python-dotenv
+gunicorn
+PyJWT
+invoke
+pytest
+pytest-cov
+pytest-dotenv
+testcontainers
