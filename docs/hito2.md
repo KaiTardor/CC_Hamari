@@ -100,6 +100,41 @@ python -m pytest backend/tests/test_auth.py::test_login_ok -v
 
 ## Gestor de integración continua
 
+Como se ha indicad, se va a utilizar **GitHub Actions** como sistema de integración continua para ejecutar automáticamente los tests en cada push y pull request.
+
+### Configuración
+
+El workflow de CI está definido en `.github/workflows/tests.yml` y se ejecuta automáticamente cuando:
+- Se hace push a las ramas `main` o `Test`
+- Se crea un pull request hacia `main`
+
+### Características del workflow
+
+1. **Matriz de versiones Python**: Los tests se ejecutan en múltiples versiones de Python (3.10, 3.11, 3.12) para asegurar compatibilidad.
+
+2. **Base de datos de test**: Se levanta un contenedor MongoDB 7 como servicio para los tests, con health checks automáticos.
+
+3. **Pasos del pipeline**:
+   - Checkout del código
+   - Configuración de Python con caché de dependencias
+   - Instalación de dependencias desde `requirements.txt`
+   - Verificación de formato de código con `ruff`
+   - Ejecución de tests con `pytest`
+   - Generación de reporte de cobertura (solo en Python 3.11)
+
+4. **Variables de entorno**: Se configuran automáticamente:
+   ```
+   MONGO_URI: mongodb://localhost:27017/HamariDB_test
+   JWT_SECRET: test-secret-key-for-ci
+   ```
+
+### Visualización de resultados
+
+Los resultados de cada ejecución se pueden ver en:
+- La pestaña "Actions" del repositorio de GitHub
+- Los checks automáticos en cada pull request
+
+
 
 ## Documentación adicional
 - [Gestor de tareas](./hito2/gestor_taras.md)
