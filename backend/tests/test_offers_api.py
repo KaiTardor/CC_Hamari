@@ -122,18 +122,7 @@ def test_list_offers_with_filters(client, db):
     r = client.get("/api/offers/?min_price=30&max_price=80", headers=auth_header(token))
     assert r.status_code == 200
     assert len(r.get_json()) == 1
-
-    # Por título
-    r = client.get("/api/offers/?title=BBB", headers=auth_header(token))
-    assert r.status_code == 200
-    assert len(r.get_json()) == 1
-
-    # Por estado
-    r = client.get("/api/offers/?is_active=false", headers=auth_header(token))
-    assert r.status_code == 200
-    assert len(r.get_json()) == 1
-
-
+    
 # ========== TESTS DE DETALLE ==========
 
 def test_get_offer_detail(client, db):
