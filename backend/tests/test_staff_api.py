@@ -6,7 +6,7 @@ def seed_staff(db, dni, **kwargs):
         "dni": dni.upper(),
         "name": "Test",
         "surname": "Staff",
-        "email": "staff@test.com",
+        "email": "staff@email.com",
         "phone": "600000000",
         "sex": "",
         "birth_date": ""
@@ -22,9 +22,9 @@ def test_create_staff_ok(client, db):
     """
     payload = {
         "dni": "34567890D",
-        "name": "Ana",
+        "name": "empleado",
         "surname": "Martínez",
-        "email": "ana@hamari.com",
+        "email": "empleado@hamari.com",
         "phone": "600111222",
         "sex": "F",
         "birth_date": "15/05/1985"
@@ -35,7 +35,7 @@ def test_create_staff_ok(client, db):
     # Verificar que se creó
     created = db.staff.find_one({"dni": "34567890D"})
     assert created is not None
-    assert created["name"] == "Ana"
+    assert created["name"] == "empleado"
 
 
 def test_create_staff_missing_fields(client, db):
@@ -44,7 +44,7 @@ def test_create_staff_missing_fields(client, db):
     """
     payload = {
         "dni": "34567890D",
-        "name": "Ana"
+        "name": "Empleado"
         # Faltan surname, email, phone
     }
     r = client.post("/api/staff/", json=payload)
@@ -61,7 +61,7 @@ def test_create_staff_duplicate(client, db):
         "dni": "34567890D",
         "name": "Otro",
         "surname": "Empleado",
-        "email": "otro@test.com",
+        "email": "otro@email.com",
         "phone": "600222333"
     }
     r = client.post("/api/staff/", json=payload)
@@ -73,7 +73,6 @@ def test_list_staff_with_data(client, db):
     """
     Listar todos los empleados
     """
-
     seed_staff(db, "11111111A", name="Staff1")
     seed_staff(db, "22222222B", name="Staff2")
     
@@ -88,12 +87,12 @@ def test_get_staff_detail(client, db):
     """
     Obtener detalles de un empleado
     """
-    seed_staff(db, "34567890D", name="Ana")
+    seed_staff(db, "34567890D", name="Empleado")
     
     r = client.get("/api/staff/34567890D")
     assert r.status_code == 200
     data = r.get_json()
-    assert data["name"] == "Ana"
+    assert data["name"] == "Empleado"
 
 
 def test_get_staff_not_found(client, db):

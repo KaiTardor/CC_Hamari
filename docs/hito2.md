@@ -16,7 +16,7 @@ Primero hay que instalarlo, que se puede hacer de forma manual con el comando:
 sudo apt uninstall python3-invoke
 ```
 
-o mediante el fichero deploy.bash para configurar directamente el entorno. Más información en el fichero de requisitos.rd enlazado en documentación adicional. 
+o mediante el fichero deploy.bash para configurar directamente el entorno. Más información en el fichero de [requisitos.md](requisitos.md). 
 
 ### Estructura de tareas
 Las dististan tareas estan organizadas en la carpeta *tasks/*, agrupadas por servicio:
@@ -41,7 +41,9 @@ Ejemplo simplificado de salida:
     app.logs        Ver los logs del backend de la aplicación.
     app.ping        Hacer ping al backend de la aplicación para comprobar si está activo.        
     app.restart     Reiniciar el backend de la aplicación.
-    ...
+    .
+    .
+    .
 ```
 
 Ejecutar alguna tarea concreta:
@@ -100,7 +102,7 @@ python -m pytest backend/tests/test_auth.py::test_login_ok -v
 
 ## Gestor de integración continua
 
-Como se ha indicad, se va a utilizar **GitHub Actions** como sistema de integración continua para ejecutar automáticamente los tests en cada push y pull request.
+Como se ha indicado, se va a utilizar **GitHub Actions** como sistema de integración continua para ejecutar automáticamente los tests en cada push y pull request.
 
 ### Configuración
 
@@ -110,7 +112,7 @@ El workflow de CI está definido en `.github/workflows/tests.yml` y se ejecuta a
 
 ### Características del workflow
 
-1. **Matriz de versiones Python**: Los tests se ejecutan en múltiples versiones de Python (3.10, 3.11, 3.12) para asegurar compatibilidad.
+1. **Matriz de versiones Python**: Los tests se ejecutan en algunos versiones de Python para asegurar compatibilidad.
 
 2. **Base de datos de test**: Se levanta un contenedor MongoDB 7 como servicio para los tests, con health checks automáticos.
 
@@ -133,8 +135,6 @@ El workflow de CI está definido en `.github/workflows/tests.yml` y se ejecuta a
 Los resultados de cada ejecución se pueden ver en:
 - La pestaña "Actions" del repositorio de GitHub
 - Los checks automáticos en cada pull request
-
-
 
 ## Documentación adicional
 - [Gestor de tareas](./hito2/gestor_taras.md)

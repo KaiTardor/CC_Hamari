@@ -1,4 +1,5 @@
 from werkzeug.security import generate_password_hash
+from bson import ObjectId
 
 def seed_client(db, dni, **kwargs):
     """
@@ -8,7 +9,7 @@ def seed_client(db, dni, **kwargs):
         "dni": dni.upper(),
         "name": "Test",
         "surname": "Client",
-        "email": "test@test.com",
+        "email": "test@email.com",
         "phone": "600000000",
         "sex": "",
         "birth_date": ""
@@ -25,9 +26,9 @@ def test_create_client_ok(client, db):
     """
     payload = {
         "dni": "12345678A",
-        "name": "Juan",
-        "surname": "Pérez",
-        "email": "juan@test.com",
+        "name": "Nombre",
+        "surname": "Apellido",
+        "email": "email@email.com",
         "phone": "600111222",
         "sex": "M",
         "birth_date": "01/01/1990"
@@ -38,7 +39,7 @@ def test_create_client_ok(client, db):
     # Verificar que se creó
     created = db.clients.find_one({"dni": "12345678A"})
     assert created is not None
-    assert created["name"] == "Juan"
+    assert created["name"] == "Nombre"
 
 
 def test_create_client_missing_fields(client, db):
@@ -47,7 +48,7 @@ def test_create_client_missing_fields(client, db):
     """
     payload = {
         "dni": "12345678A",
-        "name": "Juan"
+        "name": "Nombre"
         # Faltan surname, email, phone
     }
     r = client.post("/api/clients/", json=payload)
@@ -63,8 +64,8 @@ def test_create_client_duplicate(client, db):
     payload = {
         "dni": "12345678A",
         "name": "Otro",
-        "surname": "Cliente",
-        "email": "otro@test.com",
+        "surname": "Apellido",
+        "email": "otro@email.com",
         "phone": "600222333"
     }
     r = client.post("/api/clients/", json=payload)
@@ -90,12 +91,12 @@ def test_get_client_detail(client, db):
     """
     Obtener detalles de un cliente
     """
-    seed_client(db, "12345678A", name="Juan")
+    seed_client(db, "12345678A", name="Nombre")
     
     r = client.get("/api/clients/12345678A")
     assert r.status_code == 200
     data = r.get_json()
-    assert data["name"] == "Juan"
+    assert data["name"] == "Nombre"
 
 
 def test_get_client_not_found(client, db):
@@ -111,17 +112,17 @@ def test_update_client(client, db):
     """
     Actualizar datos de un cliente
     """
-    seed_client(db, "12345678A", name="Original")
+    seed_client(db, "12345678A", name="Nombre")
     
     r = client.patch("/api/clients/12345678A", json={
-        "name": "Actualizado",
+        "name": "Nombre_Nuevo",
         "phone": "666777888"
     })
     assert r.status_code == 200
     
     # Verificar cambios
     updated = db.clients.find_one({"dni": "12345678A"})
-    assert updated["name"] == "Actualizado"
+    assert updated["name"] == "Nombre_Nuevo"
     assert updated["phone"] == "666777888"
 
 
@@ -142,8 +143,6 @@ def test_delete_client_removes_bookings(client, db):
     """
     Eliminar cliente también elimina sus reservas
     """
-    from bson import ObjectId
-    
     seed_client(db, "12345678A")
     
     # Crear una reserva para el cliente

@@ -9,12 +9,11 @@ def seed_provider(db, dni, **kwargs):
         "company_name": "Test Company",
         "contact_name": "Contact",
         "contact_surname": "Test",
-        "email": "provider@test.com",
+        "email": "provider@email.com",
         "phone": "600000000"
     }
     defaults.update(kwargs)
     db.providers.insert_one(defaults)
-
 
 # ========== TESTS DE CREACIÓN ==========
 def test_create_provider_ok(client, db):
@@ -23,10 +22,10 @@ def test_create_provider_ok(client, db):
     """
     payload = {
         "dni": "23456789C",
-        "company_name": "Aventuras SL",
-        "contact_name": "María",
-        "contact_surname": "García",
-        "email": "maria@aventuras.com",
+        "company_name": "Nombre Compañia",
+        "contact_name": "Contacto",
+        "contact_surname": "Apellido contacto",
+        "email": "compañia@email.com",
         "phone": "600111222"
     }
     r = client.post("/api/providers/", json=payload)
@@ -35,7 +34,7 @@ def test_create_provider_ok(client, db):
     # Verificar que se creó
     created = db.providers.find_one({"dni": "23456789C"})
     assert created is not None
-    assert created["company_name"] == "Aventuras SL"
+    assert created["company_name"] == "Nombre Compañia"
 
 
 def test_create_provider_missing_fields(client, db):
@@ -60,7 +59,7 @@ def test_create_provider_duplicate(client, db):
     payload = {
         "dni": "23456789C",
         "company_name": "Otra Empresa",
-        "email": "otro@test.com",
+        "email": "otro@email.com",
         "phone": "600222333"
     }
     r = client.post("/api/providers/", json=payload)
@@ -86,7 +85,7 @@ def test_get_provider_detail(client, db):
     """
     Obtener detalles de un provider con sus ofertas
     """
-    seed_provider(db, "23456789C", company_name="Aventuras")
+    seed_provider(db, "23456789C", company_name="Nombre Compañia")
     
     # Crear ofertas del provider
     db.offers.insert_one({
@@ -103,7 +102,7 @@ def test_get_provider_detail(client, db):
     r = client.get("/api/providers/23456789C")
     assert r.status_code == 200
     data = r.get_json()
-    assert data["provider"]["company_name"] == "Aventuras"
+    assert data["provider"]["company_name"] == "Nombre Compañia"
     assert len(data["offers"]) == 2
 
 

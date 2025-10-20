@@ -106,12 +106,12 @@ def test_list_offers_with_filters(client, db):
     """
     Listado de ofertas con filtros
     """
-    seed_user(db, "client@test.com", "client", ref_dni="12345678A", pwd="pwd")
-    token = login_token(client, "client@test.com", "pwd")
+    seed_user(db, "client@email.com", "client", ref_dni="12345678A", pwd="pwd")
+    token = login_token(client, "client@email.com", "pwd")
     
-    seed_offer(db, title="Kayak", price=20.0, is_active=True)
-    seed_offer(db, title="Paddle", price=50.0, is_active=True)
-    seed_offer(db, title="Inactiva", price=100.0, is_active=False)
+    seed_offer(db, title="AAA", price=20.0, is_active=True)
+    seed_offer(db, title="BBB", price=50.0, is_active=True)
+    seed_offer(db, title="CCC", price=100.0, is_active=False)
     
     # Solo activas
     r = client.get("/api/offers/", headers=auth_header(token))
@@ -123,6 +123,16 @@ def test_list_offers_with_filters(client, db):
     assert r.status_code == 200
     assert len(r.get_json()) == 1
 
+    # Por título
+    r = client.get("/api/offers/?title=BBB", headers=auth_header(token))
+    assert r.status_code == 200
+    assert len(r.get_json()) == 1
+
+    # Por estado
+    r = client.get("/api/offers/?is_active=false", headers=auth_header(token))
+    assert r.status_code == 200
+    assert len(r.get_json()) == 1
+
 
 # ========== TESTS DE DETALLE ==========
 
@@ -130,8 +140,8 @@ def test_get_offer_detail(client, db):
     """
     Detalle de una oferta concreta
     """
-    seed_user(db, "client@test.com", "client", ref_dni="12345678A", pwd="pwd")
-    token = login_token(client, "client@test.com", "pwd")
+    seed_user(db, "client@email.com", "client", ref_dni="12345678A", pwd="pwd")
+    token = login_token(client, "client@email.com", "pwd")
     
     offer_id = seed_offer(db, title="Detalle test")
     
@@ -143,15 +153,14 @@ def test_get_offer_not_found(client, db):
     """
     Detalle de oferta no existente
     """
-    seed_user(db, "client@test.com", "client", ref_dni="12345678A", pwd="pwd")
-    token = login_token(client, "client@test.com", "pwd")
+    seed_user(db, "client@email.com", "client", ref_dni="12345678A", pwd="pwd")
+    token = login_token(client, "client@email.com", "pwd")
     
     r = client.get(f"/api/offers/{str(ObjectId())}", headers=auth_header(token))
     assert r.status_code == 404
 
 
 # ========== TESTS DE ACTUALIZACIÓN DE OFERTAS ==========
-
 def test_provider_can_update_own_offer(client, db):
     """
     Proveedor actualiza su propia oferta
@@ -209,10 +218,9 @@ def test_provider_cannot_delete_other_offer(client, db):
 
 
 # ========== TESTS DE DISPONIBILIDAD ==========
-
 def test_offer_availability(client, db):
-    seed_user(db, "client@test.com", "client", ref_dni="12345678A", pwd="pwd")
-    token = login_token(client, "client@test.com", "pwd")
+    seed_user(db, "client@email.com", "client", ref_dni="12345678A", pwd="pwd")
+    token = login_token(client, "client@email.com", "pwd")
     
     offer_id = seed_offer(db, daily_capacity=5)
     

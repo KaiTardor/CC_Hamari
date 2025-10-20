@@ -96,10 +96,10 @@ def test_staff_can_create_booking_for_client(client, db):
     """
     Staff puede crear reserva para cualquier cliente
     """
-    seed_user(db, "staff@test.com", "staff", ref_dni="STAFF1", pwd="pwd")
+    seed_user(db, "staff@email.com", "staff", ref_dni="STAFF1", pwd="pwd")
     seed_client(db, "12345678A")
     offer_id = seed_offer_with_inventory(db)
-    token = login_token(client, "staff@test.com", "pwd")
+    token = login_token(client, "staff@email.com", "pwd")
 
     r = client.post("/api/bookings/", headers=ah(token), json={
         "offer_id": offer_id,
@@ -153,14 +153,14 @@ def test_client_list_own_bookings(client, db):
     """
     Cliente solo ve sus reservas
     """
-    seed_user(db, "client1@test.com", "client", ref_dni="11111111A", pwd="pwd")
-    seed_user(db, "client2@test.com", "client", ref_dni="22222222B", pwd="pwd")
+    seed_user(db, "client1@email.com", "client", ref_dni="11111111A", pwd="pwd")
+    seed_user(db, "client2@email.com", "client", ref_dni="22222222B", pwd="pwd")
     seed_client(db, "11111111A")
     seed_client(db, "22222222B")
     
     offer_id = seed_offer_with_inventory(db, daily_capacity=5)
-    token1 = login_token(client, "client1@test.com", "pwd")
-    token2 = login_token(client, "client2@test.com", "pwd")
+    token1 = login_token(client, "client1@email.com", "pwd")
+    token2 = login_token(client, "client2@email.com", "pwd")
 
     # Crear reservas
     client.post("/api/bookings/", headers=ah(token1), json={
@@ -182,7 +182,7 @@ def test_staff_list_bookings_by_dni(client, db):
     """
     Staff puede filtrar reservas por DNI
     """
-    seed_user(db, "staff@test.com", "staff", ref_dni="STAFF1", pwd="pwd")
+    seed_user(db, "staff@email.com", "staff", ref_dni="STAFF1", pwd="pwd")
     seed_client(db, "11111111A")
     offer_id = seed_offer_with_inventory(db)
     
@@ -193,7 +193,7 @@ def test_staff_list_bookings_by_dni(client, db):
         "status": "PENDING"
     })
     
-    token = login_token(client, "staff@test.com", "pwd")
+    token = login_token(client, "staff@email.com", "pwd")
     r = client.get("/api/bookings/?dni=11111111A", headers=ah(token))
     assert r.status_code == 200
     assert len(r.get_json()) == 1

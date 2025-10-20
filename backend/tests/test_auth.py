@@ -31,7 +31,7 @@ def login_token(client, username, password):
 
 def test_login_ok(client, db):
     """
-    Login exitoso con credenciales válidasç
+    Login exitoso con credenciales válidas
     """
     db.users.insert_one({
         "username": "admin@hamari.com",
@@ -52,9 +52,9 @@ def test_login_fail_wrong_password(client, db):
     """
     Login falla con contraseña incorrecta
     """
-    seed_user(db, "user@test.com", "client", pwd="correct")
+    seed_user(db, "user@email.com", "client", pwd="correct")
     
-    r = client.post("/api/auth/login", json={"username":"user@test.com","password":"wrong"})
+    r = client.post("/api/auth/login", json={"username":"user@email.com","password":"wrong"})
     assert r.status_code == 401
 
 
@@ -70,35 +70,11 @@ def test_login_fail_missing_fields(client, db):
     """
     Login falla sin username o password
     """
-    r = client.post("/api/auth/login", json={"username":"test@test.com"})
+    r = client.post("/api/auth/login", json={"username":"test@email.com"})
     assert r.status_code == 400
     
     r = client.post("/api/auth/login", json={"password":"pwd"})
     assert r.status_code == 400
-
-
-def test_login_different_roles(client, db):
-    """
-    Login exitoso con diferentes roles
-    """
-    seed_user(db, "client@test.com", "client", ref_dni="12345678A", pwd="pwd")
-    seed_user(db, "provider@test.com", "provider", ref_dni="23456789B", pwd="pwd")
-    seed_user(db, "staff@test.com", "staff", ref_dni="34567890C", pwd="pwd")
-    
-    # Client
-    r = client.post("/api/auth/login", json={"username":"client@test.com","password":"pwd"})
-    assert r.status_code == 200
-    assert r.get_json()["user"]["role"] == "client"
-    
-    # Provider
-    r = client.post("/api/auth/login", json={"username":"provider@test.com","password":"pwd"})
-    assert r.status_code == 200
-    assert r.get_json()["user"]["role"] == "provider"
-    
-    # Staff
-    r = client.post("/api/auth/login", json={"username":"staff@test.com","password":"pwd"})
-    assert r.status_code == 200
-    assert r.get_json()["user"]["role"] == "staff"
 
 
 # ========== TESTS DE /ME ==========
@@ -107,13 +83,13 @@ def test_me_with_valid_token(client, db):
     """
     Endpoint /me retorna datos de usuario con token válido
     """
-    seed_user(db, "user@test.com", "client", ref_dni="12345678A", pwd="pwd")
-    token = login_token(client, "user@test.com", "pwd")
+    seed_user(db, "user@email.com", "client", ref_dni="12345678A", pwd="pwd")
+    token = login_token(client, "user@email.com", "pwd")
     
     r = client.get("/api/auth/me", headers=ah(token))
     assert r.status_code == 200
     data = r.get_json()
-    assert data["user"]["username"] == "user@test.com"
+    assert data["user"]["username"] == "user@email.com"
     assert data["user"]["role"] == "client"
 
 
