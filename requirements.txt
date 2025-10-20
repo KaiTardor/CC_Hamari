@@ -8,5 +8,5 @@ PyJWT
 invoke
 pytest
 pytest-cov
-mongomock
 pytest-dotenv
+testcontainers[mongo]
