@@ -1,6 +1,6 @@
 # Comparación de Bibliotecas de Aserciones disponibles
 
-Una biblioteca de aserciones es un conjunto de herramientas que permiten verificar si el comportamiento del código cumple con lo esperado durante la ejecución de las pruebas. Las aserciones son expresiones que deben evaluarse como verdaderas, pues si no lo hacen la prueba fallaría. 
+Una biblioteca de aserciones es un conjunto de herramientas que permiten verificar si el comportamiento del código cumple con lo esperado durante la ejecución de las pruebas. Las aserciones son expresiones que deben evaluarse como verdaderas, pues si no lo hacen la prueba fallaría y señalizaría el error. 
 
 Podemos contar con algunos ejemplos como: 
 

@@ -97,7 +97,6 @@ Ejecutar un test concreto:
 python -m pytest backend/tests/test_auth.py::test_login_ok -v
 ```
 
-### Anotación 
 *Algunos tests se han generado mediante el uso de Copilot, concretamente los de para verificar las operaciones CRUD de clientes, proveedores y personal*
 
 ## Gestor de integración continua
