@@ -33,7 +33,7 @@ Unittest es la biblioteca de pruebas incluida en la librería estándar de Pytho
 [Link de referencia](https://docs.python.org/3/library/unittest.html)
 
 ## Conclusión 
-En definitiva, se opta por Pytest como marco de pruebas, ya que ofrece una sintaxis más clara, una configuración más sencilla y una integración directa con las herramientas de aserciones y de integración continua elegidas. Su flexibilidad y popularidad dentro del ecosistema Python lo convierten en la mejor opción para este proyecto.
+En definitiva, se va a usar Pytest porque ofrece una sintaxis sencilla, mensajes de error claros y una gran integración con el resto del ecosistema de pruebas. Además, su sistema de aserciones basado en assert hace que las pruebas sean más legibles y fáciles de mantener, lo que resulta ideal para el desarrollo con Flask y MongoDB.
 
 ## Documentación adicional
 - [Hito 2](../hito2.md)

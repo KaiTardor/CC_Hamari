@@ -5,11 +5,11 @@ Un gestor de tareas es una herramienta que permite automatizar comandos repetiti
 Podemos contar con algunos ejemplos como: 
 
 ## Make 
-Make es una herramienta de Unix utilizado originalmente para compilar proyectos en C y C++, pero hoy en día se usa también como gestor de tareas. Utiliza un archivo (Mkaefile) en el que se define las reglas y comandos.
+Make es una herramienta de Unix utilizado originalmente para compilar proyectos en C y C++, pero hoy en día se usa también como gestor de tareas. Utiliza un archivo (Makefile) en el que se define las reglas y comandos.
 
 ### Ventajas
 - Simple, rápido y versátil. 
-- Experiencia en usarlo en el grado . 
+- Experiencia en usarlo en el grado. 
 - Se integra facilmente con proyectos. 
 
 ### Inconvenientes
