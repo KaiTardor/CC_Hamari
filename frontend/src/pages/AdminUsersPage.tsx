@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { api } from "../api";
 
 type Client = {
@@ -42,13 +42,9 @@ export default function AdminUsersPage() {
 
   // Estados para formulario de creación
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
 
-  useEffect(() => {
-    loadData();
-  }, [activeTab]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -62,12 +58,17 @@ export default function AdminUsersPage() {
         const res = await api.get("/staff/");
         setStaff(res.data);
       }
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Error al cargar datos");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setError(e.response?.data?.error ?? e.message ?? "Error al cargar datos");
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab]);
+
+  useEffect(() => {
+    void loadData();
+  }, [activeTab, loadData]);
 
   const handleDelete = async (dni: string) => {
     if (!confirm(`¿Seguro que deseas eliminar este ${activeTab === "clients" ? "cliente" : activeTab === "providers" ? "proveedor" : "empleado"}?`)) return;
@@ -76,8 +77,9 @@ export default function AdminUsersPage() {
       const endpoint = activeTab === "clients" ? "/clients/" : activeTab === "providers" ? "/providers/" : "/staff/";
       await api.delete(`${endpoint}${dni}`);
       loadData();
-    } catch (err: any) {
-      alert(err.response?.data?.error || "Error al eliminar");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      alert(e.response?.data?.error ?? e.message ?? "Error al eliminar");
     }
   };
 
@@ -98,9 +100,9 @@ export default function AdminUsersPage() {
             username,
             password,
             role,
-            ref_dni: formData.dni
+            ref_dni: formData.dni as string | undefined,
           });
-        } catch (userErr) {
+        } catch (userErr: unknown) {
           console.warn("Usuario podría ya existir:", userErr);
         }
       }
@@ -108,8 +110,9 @@ export default function AdminUsersPage() {
       setShowForm(false);
       setFormData({});
       loadData();
-    } catch (err: any) {
-      alert(err.response?.data?.error || "Error al crear");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      alert(e.response?.data?.error ?? e.message ?? "Error al crear");
     }
   };
 
@@ -203,10 +206,11 @@ export default function AdminUsersPage() {
     if (loading) return <p style={{ textAlign: "center", color: "var(--color-text-muted)" }}>Cargando...</p>;
     if (error) return <p style={{ textAlign: "center", color: "var(--color-magenta)" }}>{error}</p>;
 
-    let data: any[] = [];
-    if (activeTab === "clients") data = clients;
-    else if (activeTab === "providers") data = providers;
-    else if (activeTab === "staff") data = staff;
+  type UserItem = Client | Provider | Staff;
+  let data: UserItem[] = [];
+  if (activeTab === "clients") data = clients;
+  else if (activeTab === "providers") data = providers;
+  else if (activeTab === "staff") data = staff;
 
     if (data.length === 0) {
       return <p style={{ textAlign: "center", color: "var(--color-text-muted)", marginTop: 24 }}>No hay registros</p>;
@@ -237,22 +241,22 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody>
-            {data.map((item: any) => (
+            {data.map((item) => (
               <tr key={item.dni} style={{ borderBottom: "1px solid rgba(255, 45, 117, 0.2)" }}>
                 <td style={tdStyle}>{item.dni}</td>
                 {activeTab === "providers" ? (
                   <>
-                    <td style={tdStyle}>{item.company_name}</td>
-                    <td style={tdStyle}>{item.contact_name} {item.contact_surname}</td>
-                    <td style={tdStyle}>{item.email || "-"}</td>
-                    <td style={tdStyle}>{item.phone || "-"}</td>
+                    <td style={tdStyle}>{(item as Provider).company_name}</td>
+                    <td style={tdStyle}>{(item as Provider).contact_name} {(item as Provider).contact_surname}</td>
+                    <td style={tdStyle}>{(item as Provider).email || "-"}</td>
+                    <td style={tdStyle}>{(item as Provider).phone || "-"}</td>
                   </>
                 ) : (
                   <>
-                    <td style={tdStyle}>{item.name}</td>
-                    <td style={tdStyle}>{item.surname}</td>
-                    <td style={tdStyle}>{item.email}</td>
-                    <td style={tdStyle}>{item.phone}</td>
+                    <td style={tdStyle}>{(item as Client | Staff).name}</td>
+                    <td style={tdStyle}>{(item as Client | Staff).surname}</td>
+                    <td style={tdStyle}>{(item as Client | Staff).email}</td>
+                    <td style={tdStyle}>{(item as Client | Staff).phone}</td>
                   </>
                 )}
                 <td style={tdStyle}>

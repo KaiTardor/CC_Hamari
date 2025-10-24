@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { fetchOffers, type Offer } from "../api";
 import { Link } from "react-router-dom";
 
@@ -15,21 +15,22 @@ export default function OffersPage() {
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true); setErr(null);
     try {
-      const params: any = {};
+      const params: Record<string, string> = {};
       if (q) params.q = q;
       if (dateISO) params.date = toDDMMYYYY(dateISO);
       setOffers(await fetchOffers(params));
-    } catch (e: any) {
-      setErr(e?.message ?? "Error cargando ofertas");
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      setErr(e.message ?? "Error cargando ofertas");
     } finally {
       setLoading(false);
     }
-  }
+  }, [q, dateISO]);
 
-  useEffect(() => { load(); /* on mount */ }, []);
+  useEffect(() => { load(); /* on mount and when load changes */ }, [load]);
 
   return (
     <div className="container" style={{ padding: "32px 0" }}>

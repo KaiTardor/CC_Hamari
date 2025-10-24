@@ -14,7 +14,7 @@ export default function BookingsLookupPage() {
     setResult(null);
     
     try {
-      const params: any = {};
+      const params: Record<string, string> = {};
       if (offerId) params.offer_id = offerId;
       if (clientDni) params.client_dni = clientDni;
       
@@ -30,8 +30,9 @@ export default function BookingsLookupPage() {
       if (data.length === 0) {
         setMsg("No se encontraron reservas con esos criterios");
       }
-    } catch (e: any) {
-      setMsg(e?.response?.data?.error ?? "Error en la consulta");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setMsg(e.response?.data?.error ?? e.message ?? "Error en la consulta");
       setResult(null);
     } finally {
       setBusy(false);
@@ -46,8 +47,9 @@ export default function BookingsLookupPage() {
       setMsg("✅ Reserva cancelada correctamente");
       // Recargar resultados
       await search();
-    } catch (e: any) {
-      setMsg(e?.response?.data?.error ?? "No se pudo cancelar la reserva");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setMsg(e.response?.data?.error ?? e.message ?? "No se pudo cancelar la reserva");
     }
   }
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { fetchBookings, cancelBooking, type Booking } from "../api";
 import { useAuth } from "../auth/AuthContext";
 
@@ -12,14 +12,7 @@ export default function BookingsPage() {
   // Si el usuario es cliente, usar su DNI automáticamente
   const isClient = user?.role === "client";
 
-  useEffect(() => {
-    if (isClient && user?.ref_dni) {
-      setDni(user.ref_dni);
-      loadBookings(user.ref_dni);
-    }
-  }, [isClient, user?.ref_dni]);
-
-  async function loadBookings(dniToUse?: string) {
+  const loadBookings = useCallback(async (dniToUse?: string) => {
     const searchDni = dniToUse ?? dni;
     if (!searchDni) {
       setMsg("Por favor, ingresa un DNI");
@@ -28,31 +21,38 @@ export default function BookingsPage() {
 
     setLoading(true);
     setMsg(null);
-    try { 
+    try {
       const bookings = await fetchBookings(searchDni);
       setItems(bookings);
       if (bookings.length === 0) {
         setMsg("No se encontraron reservas para este DNI");
       }
-    }
-    catch (e: any) { 
-      setMsg(e?.response?.data?.error ?? "Error consultando reservas");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setMsg(e.response?.data?.error ?? e.message ?? "Error consultando reservas");
       setItems([]);
     } finally {
       setLoading(false);
     }
-  }
+  }, [dni]);
+
+  useEffect(() => {
+    if (isClient && user?.ref_dni) {
+      setDni(user.ref_dni);
+      void loadBookings(user.ref_dni);
+    }
+  }, [isClient, user?.ref_dni, loadBookings]);
 
   async function cancel(id: string) {
     if (!confirm("¿Estás seguro de que quieres cancelar esta reserva?")) return;
     
-    try { 
-      await cancelBooking(id); 
-      await loadBookings(); 
+    try {
+      await cancelBooking(id);
+      await loadBookings();
       setMsg("✅ Reserva cancelada correctamente");
-    }
-    catch (e: any) { 
-      setMsg(e?.response?.data?.error ?? "No se pudo cancelar");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setMsg(e.response?.data?.error ?? e.message ?? "No se pudo cancelar");
     }
   }
 

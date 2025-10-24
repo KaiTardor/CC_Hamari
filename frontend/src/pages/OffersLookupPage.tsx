@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api, type Offer } from "../api";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
@@ -13,14 +13,7 @@ export default function OffersLookupPage() {
   // Si es provider, autocompletar con su DNI y cargar automáticamente
   const isProvider = user?.role === "provider";
 
-  useEffect(() => {
-    if (isProvider && user?.ref_dni) {
-      setProviderDni(user.ref_dni);
-      searchOffers(user.ref_dni);
-    }
-  }, [isProvider, user?.ref_dni]);
-
-  async function searchOffers(dniToUse?: string) {
+  const searchOffers = useCallback(async (dniToUse?: string) => {
     const searchDni = dniToUse ?? providerDni;
     if (!searchDni) {
       setMsg("Por favor, ingresa un DNI de proveedor");
@@ -40,13 +33,21 @@ export default function OffersLookupPage() {
       if (data.length === 0) {
         setMsg("No se encontraron ofertas para este proveedor");
       }
-    } catch (e: any) {
-      setMsg(e?.response?.data?.error ?? "Error en la consulta");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setMsg(e.response?.data?.error ?? e.message ?? "Error en la consulta");
       setResult(null);
     } finally {
       setBusy(false);
     }
-  }
+  }, [providerDni]);
+
+  useEffect(() => {
+    if (isProvider && user?.ref_dni) {
+      setProviderDni(user.ref_dni);
+      void searchOffers(user.ref_dni);
+    }
+  }, [isProvider, user?.ref_dni, searchOffers]);
 
   return (
     <div className="container" style={{ padding: "32px 0" }}>

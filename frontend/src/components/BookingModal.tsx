@@ -24,14 +24,20 @@ export default function BookingModal({
     const date = toDDMMYYYY(dateISO);
 
     try { await fetchAvailability(offerId, date); }
-    catch (e: any) { setMsg(e?.response?.data?.error ?? "Sin disponibilidad."); setBusy(false); return; }
+    catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setMsg(e.response?.data?.error ?? e.message ?? "Sin disponibilidad.");
+      setBusy(false);
+      return;
+    }
 
     try {
       await createBooking({ offer_id: offerId, client_dni: dni, date });
       setMsg("✅ Reserva creada");
       setTimeout(() => onClose(true), 800);
-    } catch (e: any) {
-      setMsg(e?.response?.data?.error ?? "Error al reservar");
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      setMsg(e.response?.data?.error ?? e.message ?? "Error al reservar");
     } finally {
       setBusy(false);
     }
