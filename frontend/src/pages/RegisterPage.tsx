@@ -43,7 +43,8 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const { confirmPassword, ...dataToSend } = formData;
+  const { username, password, dni, name, surname, email, phone, sex, birth_date } = formData;
+  const dataToSend = { username, password, dni, name, surname, email, phone, sex, birth_date };
       const response = await api.post("/auth/register", dataToSend);
       
       // El backend devuelve token y user, así que auto-logeamos
@@ -54,8 +55,16 @@ export default function RegisterPage() {
       // Redirigir al home
       navigate("/");
       window.location.reload(); // Para actualizar el AuthContext
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Error al registrarse. Inténtalo de nuevo.");
+    } catch (err: unknown) {
+      type AxiosErr = { response?: { data?: { error?: string } }; message?: string };
+      let message = "Error al registrarse. Inténtalo de nuevo.";
+      if (err && typeof err === "object") {
+        const ae = err as AxiosErr;
+        message = ae.response?.data?.error ?? ae.message ?? message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }

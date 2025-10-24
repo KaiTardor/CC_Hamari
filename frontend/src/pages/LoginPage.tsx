@@ -15,8 +15,16 @@ export default function LoginPage() {
     try {
       await login(username, password);
       nav("/"); // a home
-    } catch (e: any) {
-      setMsg(e?.response?.data?.error ?? "No se pudo iniciar sesión");
+    } catch (err: unknown) {
+      type AxiosLike = { response?: { data?: { error?: string } }; message?: string };
+      let message = "No se pudo iniciar sesión";
+      if (err && typeof err === "object") {
+        const ae = err as AxiosLike;
+        message = ae.response?.data?.error ?? ae.message ?? message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setMsg(message);
     } finally {
       setBusy(false);
     }

@@ -40,8 +40,16 @@ export default function OfferCreatePage() {
         is_active: true,
       });
       setMsg("✅ Oferta creada");
-    } catch (e: any) {
-      setMsg(e?.response?.data?.error ?? "Error al crear la oferta");
+    } catch (err: unknown) {
+      type AxiosLike = { response?: { data?: { error?: string } }; message?: string };
+      let message = "Error al crear la oferta";
+      if (err && typeof err === "object") {
+        const ae = err as AxiosLike;
+        message = ae.response?.data?.error ?? ae.message ?? message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setMsg(message);
     }
   }
 
