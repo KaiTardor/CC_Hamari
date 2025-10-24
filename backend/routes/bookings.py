@@ -106,7 +106,7 @@ def create_booking():
 
 
 @bookings_bp.route("/lookup", methods=["GET"])
-@require_roles("staff")
+@require_roles("staff", "admin")
 def lookup_booking():
     """
     Buscar reservas por id de la oferta y/o dni del cliente:

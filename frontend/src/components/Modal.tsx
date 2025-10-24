@@ -5,9 +5,11 @@ type ModalProps = {
   title?: string;
   onClose: () => void;
   children?: React.ReactNode;
+  showLogin?: boolean;
+  onLogin?: () => void;
 };
 
-export default function Modal({ open, title, onClose, children }: ModalProps) {
+export default function Modal({ open, title, onClose, children, showLogin, onLogin }: ModalProps) {
   if (!open) return null;
   return (
     <div role="dialog" aria-modal="true" aria-labelledby="modal-title"
@@ -38,8 +40,11 @@ export default function Modal({ open, title, onClose, children }: ModalProps) {
           <button onClick={onClose} aria-label="Cerrar" style={{ background: "transparent", border: "none", fontSize: 20, cursor: "pointer", color: "var(--color-text-light)" }}>×</button>
         </div>
         <div style={{ padding: 16 }}>{children}</div>
-        <div style={{ padding: 12, borderTop: "1px solid rgba(255, 45, 117, 0.3)", textAlign: "right" }}>
-          <button onClick={onClose}>Cerrar</button>
+        <div style={{ padding: 12, borderTop: "1px solid rgba(255, 45, 117, 0.3)", textAlign: "right", display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          {showLogin && onLogin && (
+            <button onClick={onLogin} style={{ background: "linear-gradient(135deg, #00d4ff, #ff2d75)" }}>Ir a Login</button>
+          )}
+          <button onClick={onClose} style={{ background: "transparent", border: "1px solid var(--color-text-muted)", color: "var(--color-text-light)" }}>Cerrar</button>
         </div>
       </div>
     </div>

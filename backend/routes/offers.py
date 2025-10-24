@@ -72,7 +72,7 @@ def list_offers():
 
 
 @offers_bp.route('/lookup', methods=['GET'])
-@require_roles("staff", "provider")
+@require_roles("staff", "provider", "admin")
 def lookup_offer():
     """
     Búsqueda operativa por id o por proveedor (staff/provider).
