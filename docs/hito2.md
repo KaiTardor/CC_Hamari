@@ -1,6 +1,6 @@
 # Hito 2
 
-*Version 0.1*
+*Version 0.2*
 
 ## Configuración de la integración continua
 
@@ -13,13 +13,13 @@ Se utiliza Invoke como gestor de tareas para automatizar acciones comunes del pr
 Primero hay que instalarlo, que se puede hacer de forma manual con el comando: 
 
 ```
-sudo apt uninstall python3-invoke
+sudo apt install python3-invoke
 ```
 
 o mediante el fichero deploy.bash para configurar directamente el entorno. Más información en el fichero de [requisitos.md](requisitos.md). 
 
 ### Estructura de tareas
-Las dististan tareas estan organizadas en la carpeta *tasks/*, agrupadas por servicio:
+Las distintas tareas estan organizadas en la carpeta *tasks/*, agrupadas por servicio:
 
 ```
 tasks/
@@ -64,7 +64,7 @@ sudo apt install python3-invoke
 o mismamente, se configurar al ejecutar el fichero deploy.bash
 
 ### Estructura de tareas
-Los distintos test estan dentro de la carpeta *backend/test/*:
+Los distintos test estan dentro de la carpeta *backend/tests/*:
 
 ```
 backend/tests/
@@ -97,7 +97,43 @@ Ejecutar un test concreto:
 python -m pytest backend/tests/test_auth.py::test_login_ok -v
 ```
 
-*Algunos tests se han generado mediante el uso de Copilot, concretamente los de para verificar las operaciones CRUD de clientes, proveedores y personal*
+### Explicaciones más detalladas
+
+Se pueden agrupar principalmente en tres secciones:
+- **Test de autenticación y autorización**
+Estos tests validan el correcto funcionamiento del sistema de login y control de accesos. Evalúan tanto los flujos exitosos como los casos de error.
+
+    Algunos ejemplos:
+  
+      - Login correcto con credenciales válidas (test_login_ok).
+  
+      - Fallos de autenticación con contraseñas erroneas o usuarios inexistentes.
+  
+      - Denegación de rutas por usuarios no permitidos.
+
+- **Test de gestión de inventario (ofertas y reservas)**
+Dichos tests se encargan de garantizan la coherencia entre las ofertas que hay, el inventario disponible y reservas realizadas. Evalúan desde la creación de reservas hasta el control de capacidad o cancelaciones.
+
+    Algunos ejemplos:
+  
+      - Creación de una reserva concreta.
+  
+      - Gestión de las reservas en caso de no haber plazas.
+  
+      - Los clientes solamente puede gestionar **sus** reservas.
+
+- **Test de gestión de usuarios (providers, staffs y clients)**
+Por último este grupo de tests se encargan de compruebar las operaciones CRUD, incluyendo su efecto en los datos asociados.
+
+    Algunos ejemplos:
+  
+      - Creación de usuarios con todos los campos requeridos.
+  
+      - Errores a la hora de tener usuarios duplicados.
+  
+      - Listado y consulta de detalle de los tipos de usuario. 
+
+*Algunos tests de este último grupo se han generado mediante el uso de Copilot para agilizar el proceso*
 
 ## Gestor de integración continua
 
@@ -141,3 +177,4 @@ Los resultados de cada ejecución se pueden ver en:
 - [Marco de pruebas](./hito2/marco_pruebas.md)
 - [Gestor de integración continua](./gestor_ic.md)
 - [Requisitos y uso del repositorio](./requisitos.md)
+
