@@ -26,6 +26,7 @@ Este proyecto consiste en desarrollar una aplicación que permita a la empresa H
 ## Hito 3
 - [Diseño de microservicios](./docs/hito3.md)
     - Descripción de la elección del [framework](./docs/hito3/framework.md)
+    - Descripción de la elección del [log](./docs/hito3/log.md)
 
 ## Hito 4
 
