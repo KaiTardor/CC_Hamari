@@ -24,6 +24,8 @@ Este proyecto consiste en desarrollar una aplicación que permita a la empresa H
 - [Requisitos y uso del repositorio](./docs/requisitos.md)
 
 ## Hito 3
+- [Diseño de microservicios](./docs/hito3.md)
+    - Descripción de la elección del [framework](./docs/hito3/framework.md)
 
 ## Hito 4
 
