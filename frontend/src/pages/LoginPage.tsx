@@ -124,22 +124,6 @@ export default function LoginPage() {
           </a>
         </p>
       </form>
-
-      <div style={{
-        marginTop: 32,
-        padding: 16,
-        background: "var(--color-bg-card)",
-        borderRadius: 8,
-        border: "1px solid rgba(0, 212, 255, 0.3)",
-      }}>
-        <strong style={{ color: "var(--color-cyan)", fontSize: "0.95rem" }}>Usuarios demo:</strong>
-        <ul style={{ margin: "8px 0 0", paddingLeft: 20, color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
-          <li>admin@hamari.com / <code style={{ color: "var(--color-orange)" }}>admin123</code></li>
-          <li>23456789C / <code style={{ color: "var(--color-orange)" }}>provider123</code></li>
-          <li>34567890D / <code style={{ color: "var(--color-orange)" }}>staff123</code></li>
-          <li>12345678A / <code style={{ color: "var(--color-orange)" }}>client123</code></li>
-        </ul>
-      </div>
     </div>
   );
 }

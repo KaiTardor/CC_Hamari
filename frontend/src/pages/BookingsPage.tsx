@@ -206,7 +206,6 @@ export default function BookingsPage() {
               <span style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>ID Oferta: </span>
               <span style={{ 
                 color: "var(--color-text-light)", 
-                fontFamily: "monospace",
                 fontSize: "0.9rem",
               }}>
                 {b.offer_id}

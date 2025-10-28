@@ -8,7 +8,9 @@
   --color-text-light: #e8e4f0;
   --color-text-muted: #b8b4c0;
   
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Use Roboto as the primary font, with sensible fallbacks */
+  /* Use Roboto only (no generic fallbacks as requested) */
+  font-family: 'Roboto';
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
@@ -26,6 +28,10 @@ a:hover { color: var(--color-magenta); }
 body { margin: 0; min-width: 320px; min-height: 100vh; }
 
 #root { display: block; }
+
+body, input, textarea, select, button { 
+  font-family: 'Roboto';
+}
 
 h1 { font-size: 2rem; line-height: 1.1; }
 

@@ -1,78 +1,57 @@
-# Registro (logs) — opciones y recomendación
+# Comparación de registros (logs)
 
-Este documento describe tres opciones prácticas para manejar logs en el backend Python (Flask): el módulo estándar `logging`, `loguru` y `structlog`. Para cada opción se incluyen ventajas, inconvenientes y una recomendación final.
+Logging es el proceso de registrar eventos o mensajes que ocurren durante la ejecución de un programa, con el objetivo de supervisar, depurar y analizar su comportamiento. Estos registros (logs) permiten detectar errores, medir rendimiento y entender el flujo de la aplicación tanto en desarrollo como en producción, que para ello se han considerado las siguientes opciones: 
 
-## 1) Módulo estándar `logging`
+## Módulo estándar logging
+El módulo logging es la librería estándar de Python para la gestión de registros (logs). Permite registrar eventos del sistema con diferentes niveles de severidad (DEBUG, INFO, WARNING, ERROR, CRITICAL).
 
-Descripción
-- `logging` es el módulo incluido en la biblioteca estándar de Python. Permite configurar loggers, handlers y formatters, y tiene soporte para rotación (via `logging.handlers`).
+### Ventajas
+- Integrado en la librería estándar de Python
+- Altamente configurable mediante handlers, formatters y filters.
 
-Ventajas
-- Sin dependencias externas.
-- Muy configurable: handlers para ficheros, syslog, stream, rotación, filtros.
-- Bien conocido y ampliamente compatible con bibliotecas.
+### Inconvenientes
+- Sintaxis verbosa y configuración manual extensa.
+- Difícil de mantener en proyectos grandes si no se estructura correctamente.
+- Menor legibilidad del código frente a librerías más modernas.
 
-Inconvenientes
-- API algo más verbosa que alternativas de terceros.
-- Formateo estructurado (JSON) requiere un formatter adicional (p. ej. `python-json-logger`).
+[Link de referencia](https://docs.python.org/3/library/logging.html)
 
-Cuándo usarlo
-- Proyectos pequeños o cuando se prefiera no añadir dependencias. También es la base para integrar librerías externas.
 
----
+## Loguru
+Loguru es una librería de logging moderna para Python que busca simplificar el proceso de registro con una configuración mínima y una sintaxis más limpia
 
-## 2) Loguru
+### Ventajas
+- Fácil de usar: configuración simple, sin necesidad de definir loggers, handlers ni formatters manualmente.
+- Permite rotación automática de archivos, compresión y eliminación de logs antiguos.
+- Mensajes coloreados y legibles en consola.
+- Soporta interceptación del logging estándar y formateo personalizable.
 
-Descripción
-- `loguru` es una librería de logging muy cómoda y moderna que simplifica la configuración y añade funcionalidades por defecto (rotación, retención, backtrace, formato amigable).
+### Inconvenientes
+- Añade una dependencia externa.
+- Menos control detallado que el módulo estándar en configuraciones muy específicas.
 
-Ventajas
-- API muy sencilla (logger global), fácil de configurar.
-- Rotación y retención integradas sin handlers manuales.
-- Fácil de capturar logs del módulo estándar y redirigirlos a loguru.
-- Buena experiencia de desarrollo (formato colorido en consola).
+[Link de referencia](https://loguru.readthedocs.io/en/stable/)
 
-Inconvenientes
-- Añade una dependencia externa (pero ligera y estable).
-- Convención distinta al módulo `logging` estándar (aunque puede interceptar `logging`).
+## structlog
 
-Cuándo usarlo
-- Cuando se busca configuración rápida y clara, con rotación de ficheros y salida a stdout por defecto. Ideal para proyectos donde quieres resultados inmediatos sin mucha configuración.
+Structlog es una librería enfocada en el logging estructurado, es decir, en representar los logs en formato JSON u objetos, lo que facilita su análisis y envío a sistemas de monitorización (como ELK, Datadog o Grafana).
 
----
+### Ventajas
+- Ideal para entornos distribuidos o microservicios.
+- Compatible con el módulo logging estándar.
+- Facilita la integración con herramientas de observabilidad.
 
-## 3) structlog
+### Inconvenientes
+- Configuración más compleja para proyectos pequeños.
+- Requiere un formato de salida estructurado (JSON), lo que puede ser innecesario en fases iniciales.
+- Sobrecoste si no se usa junto con sistemas de análisis de logs externos.
 
-Descripción
-- `structlog` se centra en logs estructurados (p. ej. JSON) y composición: facilita añadir campos (request_id, user_id) y producir salidas listas para indexar (ELK, Loki).
+[Link de referencia](https://www.structlog.org/en/stable/)
 
-Ventajas
-- Excelente para logs estructurados y para enriquecer eventos con contexto (trazas, ids).
-- Se integra con el módulo `logging` o con `python-json-logger`.
+## Conclusión
 
-Inconvenientes
-- Requiere más configuración inicial que `loguru`.
-- Añade conceptos nuevos (processors, renderer) que tienen curva de aprendizaje.
+En definitiva, se ha optado por Loguru para la gestión de los logs de la aplicación ya que proporciona una solución simple y potente. Además, su integración con Flask es directa y permite registrar fácilmente los eventos del servidor, errores y peticiones, manteniendo un código limpio y legible.
 
-Cuándo usarlo
-- Proyectos que necesiten logs JSON listos para indexado y análisis, o cuando quieras un pipeline de processing más fino.
-
----
-
-## Recomendación y elección
-
-Para este proyecto se elige `loguru` por su sencillez de integración, rotación/retención incluidas y la mínima fricción para empezar a obtener logs útiles en desarrollo y producción.
-
-Plan de integración:
-- Añadir `loguru` como dependencia.
-- Crear `backend/logging.py` que configure `loguru` (stdout + fichero con rotación diaria) y capture el módulo `logging` estándar.
-- Añadir un `request_id` por petición en Flask y usar un logger ligado al request para facilitar correlación.
-
-En los próximos pasos implementaré la integración en el repositorio (`backend/logging.py`) y la inicializaré desde `backend/__init__.py`.
-
----
-
-Referencias rápidas
-- loguru: https://github.com/Delgan/loguru
-- structlog: https://www.structlog.org/
-- logging (stdlib): https://docs.python.org/3/library/logging.html
+## Documentación adicional
+- [Hito 3](../hito3.md)
+- [Elección de framwwork](./framework.md)
