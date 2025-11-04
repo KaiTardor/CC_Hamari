@@ -11,11 +11,10 @@ El diseño implementado para el desarrollo del proyecto se basa en una arquitect
 
 Ambos módulos se comunican a través de peticiones HTTP, y el sistema en su conjunto utiliza una base de datos MongoDB para la persistencia de la información.
 
----
 
 ## Aplicación Web (Frontend)
 
-El frontend está desarrollado como una **Single Page Application (SPA)** utilizando **React** y **Vite**, ubicada en el directorio `frontend/`.
+El frontend está desarrollado como una Single Page Application (SPA) utilizando **React** y **Vite**, ubicada en el directorio `frontend/`.
 Este componente implementa las vistas principales y consume la API a través de funciones definidas en `frontend/src/api.ts`.
 
 Las páginas principales disponibles en la aplicación son:
@@ -31,38 +30,30 @@ Las páginas principales disponibles en la aplicación son:
 
 ## API REST (Backend)
 
-El backend está implementado en **Flask** y organizado mediante **Blueprints** (uno por dominio funcional).
-Cada dominio se apoya en una capa de servicios ubicada en `backend/services/`, encargada de la lógica de negocio y las validaciones.
+El backend está implementado en **Flask** y organizado mediante Blueprints (uno por dominio funcional). Cada dominio se apoya en una capa de servicios ubicada en `backend/services/`, encargada de la lógica de negocio y de las validaciones.
 
-La API se expone bajo el prefijo `/api/*`, e incluye además una ruta raíz (`GET /`) que actúa como **comprobación básica de estado (healthcheck)**.
-La base de datos utilizada es **MongoDB**, gestionada mediante contenedores definidos en `docker-compose.yml`.
-
----
+La API se expone bajo el prefijo `/api/*`, e incluye además una ruta raíz (`GET /`). La base de datos utilizada es **MongoDB**, gestionada mediante contenedores definidos en `docker-compose.yml`.
 
 ### Dominios y Responsabilidades
 
 * **Auth (`/api/auth`)**
-  Gestiona el inicio de sesión, el registro y la emisión/validación de tokens JWT.
-  Incluye la creación administrativa de usuarios.
+  Gestiona el inicio de sesión, el registro y la emisión/validación de tokens JWT. Incluye tambien la creacion administrativa de los usuarios.
 
 * **Offers (`/api/offers`)**
-  Administra las ofertas publicadas por los proveedores, sus precios e inventario por fecha.
-  Permite realizar búsquedas y verificar la disponibilidad de ofertas.
+  Gestiona las ofertas publicadas disponibles en el sitio web
 
 * **Bookings (`/api/bookings`)**
-  Controla el ciclo de vida de las reservas: creación, actualización de inventario, cambio de estado (`PENDING`, `CONFIRMED`, `CANCELLED`) y consultas administrativas.
+  Controla el ciclo de vida de las reservas: creación, actualización de inventario, cambio de estado.
 
 * **Clients (`/api/clients`)**
-  Almacena y gestiona la información de los clientes, junto con su historial de reservas.
+  Almacena y gestiona la información de los clientes.
 
 * **Providers (`/api/providers`)**
-  Registra los datos de los proveedores (empresa y contacto) y coordina las operaciones relacionadas con sus ofertas.
-  Aplica operaciones en cascada en casos de actualización o eliminación.
+  Almacena y gestiona la información de los proveedores.
 
 * **Staff (`/api/staff`)**
-  Proporciona herramientas internas de administración y soporte, incluyendo confirmaciones, anulaciones y consultas avanzadas.
+  Almacena y gestiona la información del personal.
 
----
 
 ### Convenciones y Estructura de la API
 
@@ -70,16 +61,15 @@ La base de datos utilizada es **MongoDB**, gestionada mediante contenedores defi
 
 * **Convenciones CRUD por recurso:**
 
-  * `GET /api/<resource>` — Listado (con filtros por *querystring*)
-  * `POST /api/<resource>` — Creación de nuevo recurso
-  * `GET /api/<resource>/{id}` — Consulta detallada
-  * `PUT` o `PATCH /api/<resource>/{id}` — Actualización
-  * `DELETE /api/<resource>/{id}` — Eliminación
+  * `GET /api/<resource>` — Listado de un recurso a especificar
+  * `POST /api/<resource>` — Creacion de nuevo recurso
+  * `GET /api/<resource>/{id}` — Consulta detallada sobre un recurso concreto
+  * `PUT` o `PATCH /api/<resource>/{id}` — Actualización de un recurso concreto
+  * `DELETE /api/<resource>/{id}` — Eliminación de un recurso concreto
 
-* **Endpoints especiales destacados:**
+* **Algunos Endpoints de ejemplo destacados:**
 
   * `/lookup` — Búsquedas administrativas (ej.: `/api/offers/lookup`)
-  * `/api/offers/{id}/availability?date=DD/MM/AAAA` — Consulta de inventario por fecha
   * `/api/bookings/{id}/status` — Cambio de estado de una reserva
   * `/api/auth`:
 
@@ -98,9 +88,6 @@ La base de datos utilizada es **MongoDB**, gestionada mediante contenedores defi
     * `401` — No autorizado
     * `403` — Acceso prohibido
     * `404` — No encontrado
-    * `409` — Conflicto o duplicado
-
----
 
 ### Ejemplos de Uso
 
@@ -118,12 +105,37 @@ GET /api/offers/{offer_id}/availability?date=10/12/2025
 Header: Authorization: Bearer <token>
 ```
 
-**Crear una reserva (cliente):**
-
-```
-POST /api/bookings
-Header: Authorization: Bearer <token>
-Body: { "offer_id": "...", "client_dni": "12345678A", "date": "10/12/2025" }
-```
-
 ## Sistema de logs
+
+Loguru es la biblioteca utilizada para el sistema de logging del backend. En este proyecto se inicializa en `backend/logging.py` y se encarga de:
+
+- Unificar la salida de logs a consola y fichero.
+- Añadir contexto por petición (campo legible `request_summary` y `request_id` para correlación).
+- Gestionar rotación diaria y retención de ficheros en `logs/app_YYYY-MM-DD.log`.
+- Interceptar el logging estándar y capturar excepciones con su traceback cuando ocurren errores inesperados.
+
+Salida de ejemplo (fichero):
+
+![Ejemplo fichero de logs](../imgs/logs.png)
+
+Salida de ejemplo (docker):
+
+![Ejemplo salida docker](../imgs/docker_logs.png)
+
+## Tests
+Tal como se recoge en el hito 2, la suite de pruebas del backend se ejecuta con pytest:
+
+```
+python -m pytest -q
+```
+
+A diferencia del hito anterior, se han añadido tests para cubrir los servicios debido al desacoplamiento de la logica de negocio. 
+
+En la siguiente imagen se puede ver los resultados de una ejecución: 
+
+![Ejemplo resultado pytest](../imgs/pytest.png)
+
+
+## Documentación adicional
+- [Framework elegido ](./hito3/framework.md)
+- [Elección sistema de Logs](./hito3/log.md)
