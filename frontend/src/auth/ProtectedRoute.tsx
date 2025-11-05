@@ -15,11 +15,8 @@ export default function ProtectedRoute({
   if (!user) return <Navigate to="/login" replace />;
 
   if (roles && !roles.includes(user.role)) {
-    return (
-      <div style={{ padding: 16 }}>
-        No tienes permiso para ver esta página.
-      </div>
-    );
+    // Redirige al home si no tiene permiso
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

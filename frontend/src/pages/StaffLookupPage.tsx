@@ -12,7 +12,7 @@ export default function StaffLookupPage() {
   async function search() {
     setMsg(null); setBusy(true); setResult(null);
     try {
-      const params: any = {};
+      const params: Record<string, string> = {};
       if (offerId) params.offer_id = offerId;
       if (providerDni) params.provider_dni = providerDni;
       if (!params.offer_id && !params.provider_dni) {
@@ -20,8 +20,16 @@ export default function StaffLookupPage() {
       }
       const { data } = await api.get("/offers/lookup", { params });
       setResult(data);
-    } catch (e: any) {
-      setMsg(e?.response?.data?.error ?? "Error en la consulta");
+    } catch (err: unknown) {
+      type AxiosErrorLike = { response?: { data?: { error?: string } }; message?: string };
+      let message = "Error en la consulta";
+      if (err && typeof err === "object") {
+        const ae = err as AxiosErrorLike;
+        message = ae.response?.data?.error ?? ae.message ?? message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setMsg(message);
     } finally {
       setBusy(false);
     }

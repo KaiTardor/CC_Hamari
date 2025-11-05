@@ -3,6 +3,7 @@ from flask_pymongo import PyMongo
 from flask_cors import CORS
 from .config import Config
 from .utils.index import *
+from .logging import setup_logging
 
 # Inicializamos PyMongo global
 mongo = PyMongo()
@@ -14,6 +15,9 @@ def create_app():
     """
     app = Flask(__name__)
     app.config.from_object(Config)
+
+    # Inicializar logging (loguru)
+    setup_logging(app)
 
     # CORS para permitir peticiones desde frontend React
     CORS(app, resources={r"/api/*": {"origins": "*"}})
