@@ -129,8 +129,6 @@ Tal como se recoge en el hito 2, la suite de pruebas del backend se ejecuta con 
 python -m pytest -q
 ```
 
-A diferencia del hito anterior, se han añadido tests para cubrir los servicios debido al desacoplamiento de la logica de negocio. 
-
 En la siguiente imagen se puede ver los resultados de una ejecución: 
 
 ![Ejemplo resultado pytest](../imgs/pytest.png)
@@ -139,3 +137,4 @@ En la siguiente imagen se puede ver los resultados de una ejecución:
 ## Documentación adicional
 - [Framework elegido ](./hito3/framework.md)
 - [Elección sistema de Logs](./hito3/log.md)
+- [Hito 2](hito2.md)

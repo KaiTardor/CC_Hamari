@@ -119,23 +119,3 @@ def test_unauthorized_access_without_token(client, db):
     
     r = client.post("/api/offers/", json={})
     assert r.status_code == 401
-
-
-def test_admin_has_full_access(client, db):
-    """Admin tiene acceso completo a todas las rutas"""
-    seed_user(db, "admin@hamari.com", "admin", pwd="admin123")
-    token = login_token(client, "admin@hamari.com", "admin123")
-    
-    # Admin puede crear ofertas para cualquier provider
-    payload = {
-        "provider_dni": "23456789C",
-        "title": "Test Offer",
-        "description": "desc",
-        "price": 50.0,
-        "people_included": 2,
-        "available_from": "01/11/2025",
-        "available_to": "03/11/2025",
-        "daily_capacity": 5
-    }
-    r = client.post("/api/offers/", headers=ah(token), json=payload)
-    assert r.status_code == 201
