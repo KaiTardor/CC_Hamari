@@ -1,7 +1,15 @@
 import os
-import pytest 
+import re
+import pytest
 from testcontainers.mongodb import MongoDbContainer
+from testcontainers.core.wait_strategies import LogMessageWaitStrategy
 from backend import create_app
+
+def _patched_connect(self) -> None:
+    pattern = re.compile(r"waiting for connections", re.MULTILINE | re.IGNORECASE)
+    LogMessageWaitStrategy(pattern).wait_until_ready(self)
+
+MongoDbContainer._connect = _patched_connect
 
 COLLECTIONS = ["users", "offers", "offer_inventory", "bookings", "clients", "providers", "staff"]
 
