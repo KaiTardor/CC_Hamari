@@ -29,5 +29,10 @@ Este proyecto consiste en desarrollar una aplicación que permita a la empresa H
     - Descripción de la elección del [log](./docs/hito3/log.md)
 
 ## Hito 4
+- [Composición de microservicios](./docs/hito4.md)
+    - Descripición detallada de las [imágenes base empleadas](./docs/hito4/base_img.md)
+    - Documentación sobre los [Dockerfiles de los Microservicios](./docs/hito4/dockerfiles.md)
+    - Documentación sobre el fichero de [composición del clúster](./docs/hito4/compose.md)
+    - Documentación sobre la actualización, subida y publicación a [Github Packages](./docs/hito4/github_pack.md)
 
 ## Hito 5
