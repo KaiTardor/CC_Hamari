@@ -13,8 +13,8 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    # Imagen objetivo para publicación (GHCR)
-    image: ghcr.io/KaiTardor/cc-hamari-backend:latest
+    # Imagen objetivo para publicación (GHCR) 
+    image: ghcr.io/kaitardor/cc-hamari-backend:latest
     container_name: hamari-backend
     restart: unless-stopped
     environment:
@@ -35,8 +35,8 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         - VITE_API_BASE=
-    # Imagen objetivo para publicación (GHCR)
-    image: ghcr.io/KaiTardor/cc-hamari-frontend:latest
+    # Imagen objetivo para publicación (GHCR) 
+    image: ghcr.io/kaitardor/cc-hamari-frontend:latest
     container_name: hamari-frontend
     restart: unless-stopped
     depends_on:
