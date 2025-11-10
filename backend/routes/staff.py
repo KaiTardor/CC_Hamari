@@ -1,11 +1,21 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
+
 from backend import mongo
+
 from ..services.staff_service import (
     create_staff as svc_create_staff,
-    list_staff as svc_list_staff,
-    get_staff as svc_get_staff,
-    update_staff as svc_update_staff,
+)
+from ..services.staff_service import (
     delete_staff as svc_delete_staff,
+)
+from ..services.staff_service import (
+    get_staff as svc_get_staff,
+)
+from ..services.staff_service import (
+    list_staff as svc_list_staff,
+)
+from ..services.staff_service import (
+    update_staff as svc_update_staff,
 )
 
 staff_bp = Blueprint("staff", __name__)
@@ -39,7 +49,7 @@ def staff_detail(dni):
     return jsonify(doc)
 
 
-@staff_bp.route("/<dni>", methods=["PUT","PATCH"])
+@staff_bp.route("/<dni>", methods=["PUT", "PATCH"])
 def update_staff(dni):
     data = request.get_json(force=True)
     try:

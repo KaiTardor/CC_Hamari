@@ -1,12 +1,15 @@
-# Fichero generado por ChatGPT :) 
-import os, time, jwt
-from typing import Optional, Dict
+# Fichero generado por ChatGPT :)
+import os
+import time
+from typing import Dict, Optional
 
+import jwt
 
-# Claves/algoritmo y tiempo de expiración por defecto 
+# Claves/algoritmo y tiempo de expiración por defecto
 JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")
 JWT_ALG = "HS256"
 JWT_TTL_SECONDS = 24 * 3600  # 1 día
+
 
 def create_jwt(payload: Dict) -> str:
     """
@@ -19,6 +22,7 @@ def create_jwt(payload: Dict) -> str:
         **payload,
     }
     return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALG)
+
 
 def decode_jwt(token: str) -> Optional[Dict]:
     """Decodifica y verifica un token JWT.

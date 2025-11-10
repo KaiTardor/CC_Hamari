@@ -1,12 +1,13 @@
-import sys
-import uuid
 import logging
+import sys
 import time
+import uuid
 from pathlib import Path
 
 # Try to import loguru; if not available, provide a lightweight shim that
 try:
     from loguru import logger
+
     _LOGURU_AVAILABLE = True
 except Exception:
     _LOGURU_AVAILABLE = False
@@ -71,10 +72,14 @@ if not _LOGURU_AVAILABLE:
             fmt = kwargs.get("format") if isinstance(kwargs, dict) else None
             if isinstance(stream_or_path, str):
                 # treat as file path
-                handler = logging.FileHandler(stream_or_path, encoding=kwargs.get("encoding", None))
+                handler = logging.FileHandler(
+                    stream_or_path, encoding=kwargs.get("encoding", None)
+                )
             else:
                 # treat as stream (None -> stdout)
-                handler = logging.StreamHandler(stream_or_path if stream_or_path is not None else sys.stdout)
+                handler = logging.StreamHandler(
+                    stream_or_path if stream_or_path is not None else sys.stdout
+                )
             if fmt:
                 try:
                     handler.setFormatter(logging.Formatter("%(message)s"))
@@ -134,7 +139,9 @@ def setup_logging(app=None, level="INFO"):
             # Use record.levelno (int) to log via loguru; include exception info if present
             try:
                 if record.exc_info:
-                    logger.opt(exception=record.exc_info).log(record.levelno, record.getMessage())
+                    logger.opt(exception=record.exc_info).log(
+                        record.levelno, record.getMessage()
+                    )
                 else:
                     logger.log(record.levelno, record.getMessage())
             except Exception:
@@ -145,6 +152,7 @@ def setup_logging(app=None, level="INFO"):
 
     # Flask integration: bind request_id and provide request logger
     if app is not None:
+
         @app.before_request
         def _bind_request_summary_and_id():
             # request id
@@ -187,7 +195,9 @@ def setup_logging(app=None, level="INFO"):
                 lg = getattr(g, "logger", logger)
                 # Registrar solo un mensaje conciso en español: método, ruta y código.
                 # No incluimos duración, remote_addr ni params para evitar duplicidad y exceso de datos.
-                lg.info(f"Petición {request.method} {request.path} -> {response.status_code}")
+                lg.info(
+                    f"Petición {request.method} {request.path} -> {response.status_code}"
+                )
             except Exception:
                 logger.exception("Error registrando la petición")
             return response
@@ -207,7 +217,9 @@ def setup_logging(app=None, level="INFO"):
                 lg = getattr(g, "logger", logger)
                 if isinstance(e, HTTPException):
                     # No registrar traceback completo para errores HTTP esperados
-                    lg.warning(f"Excepción HTTP durante la petición: {e.code} {e.name} - {e.description}")
+                    lg.warning(
+                        f"Excepción HTTP durante la petición: {e.code} {e.name} - {e.description}"
+                    )
                     return e
                 else:
                     lg.exception("Excepción no controlada durante la petición")

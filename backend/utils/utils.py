@@ -1,28 +1,34 @@
 from datetime import datetime
+
 FMT = "%d/%m/%Y"
+
 
 def normalize_dni(value: str):
     if not value:
         return value
     return value.strip().upper()
 
+
 def to_float_or_none(s):
     try:
         return float(s) if s is not None else None
     except (TypeError, ValueError):
         return None
-    
+
+
 def to_int_or_none(s):
     try:
         return int(s) if s is not None else None
     except (TypeError, ValueError):
         return None
-    
+
+
 def to_str_or_none(s):
     try:
         return str(s) if s is not None else None
     except (TypeError, ValueError):
         return None
+
 
 def to_bool_or_none(s):
     try:
@@ -31,15 +37,16 @@ def to_bool_or_none(s):
         if isinstance(s, bool):
             return s
         s_lower = str(s).strip().lower()
-        if s_lower in ['true', '1', 'yes']:
+        if s_lower in ["true", "1", "yes"]:
             return True
-        elif s_lower in ['false', '0', 'no']:
+        elif s_lower in ["false", "0", "no"]:
             return False
         else:
             return None
     except (TypeError, ValueError):
         return None
-    
+
+
 def is_valid_email(email: str) -> bool:
     # Permissive email validation: ensure there's one '@' and a domain with a dot.
     # This accepts internationalized local-parts (e.g., containing 'ñ') which
@@ -58,23 +65,34 @@ def is_valid_email(email: str) -> bool:
         return False
     return True
 
+
 def is_valid_phone(phone: str) -> bool:
     import re
+
     if not phone:
         return False
     # Accept shorter test phone numbers (3-20 chars) allowing +, digits, spaces, hyphens and parentheses
-    phone_regex = r'^\+?[0-9\s\-()]{3,20}$'
+    phone_regex = r"^\+?[0-9\s\-()]{3,20}$"
     return re.match(phone_regex, phone) is not None
 
+
 # app/utils/validators.py
+
 
 def _parse(d: str):
     return datetime.strptime(d, FMT).date()
 
+
 def validate_offer_simple(data: dict) -> tuple[bool, str]:
     required = [
-        "provider_dni", "title", "description", "price",
-        "people_included", "available_from", "available_to", "daily_capacity"
+        "provider_dni",
+        "title",
+        "description",
+        "price",
+        "people_included",
+        "available_from",
+        "available_to",
+        "daily_capacity",
     ]
     missing = [k for k in required if k not in data]
     if missing:

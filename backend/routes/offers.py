@@ -1,32 +1,45 @@
-from flask import Blueprint, request, jsonify
 from bson import ObjectId
+from flask import Blueprint, jsonify, request
+
 from backend import mongo
 
-from ..utils.utils import to_float_or_none
-from ..utils.authz import require_roles, current_user
 from ..services.offers_service import (
-    list_offers as svc_list_offers,
-    lookup_offer as svc_lookup_offer,
-    get_offer as svc_get_offer,
-    create_offer as svc_create_offer,
-    update_offer as svc_update_offer,
-    delete_offer as svc_delete_offer,
     check_availability as svc_check_availability,
 )
+from ..services.offers_service import (
+    create_offer as svc_create_offer,
+)
+from ..services.offers_service import (
+    delete_offer as svc_delete_offer,
+)
+from ..services.offers_service import (
+    get_offer as svc_get_offer,
+)
+from ..services.offers_service import (
+    list_offers as svc_list_offers,
+)
+from ..services.offers_service import (
+    lookup_offer as svc_lookup_offer,
+)
+from ..services.offers_service import (
+    update_offer as svc_update_offer,
+)
+from ..utils.authz import current_user, require_roles
+from ..utils.utils import to_float_or_none
 
-offers_bp = Blueprint('offers', __name__)
+offers_bp = Blueprint("offers", __name__)
 
 
-@offers_bp.route('/', methods=['GET'])
+@offers_bp.route("/", methods=["GET"])
 @require_roles("provider", "staff", "client")
 def list_offers():
-    q = request.args.get('q')
-    city = request.args.get('city')
-    cat = request.args.get('category')
-    min_price = to_float_or_none(request.args.get('min_price'))
-    max_price = to_float_or_none(request.args.get('max_price'))
-    date_str = request.args.get('date')
-    provider_dni = (request.args.get('provider_dni') or "").strip().upper()
+    q = request.args.get("q")
+    city = request.args.get("city")
+    cat = request.args.get("category")
+    min_price = to_float_or_none(request.args.get("min_price"))
+    max_price = to_float_or_none(request.args.get("max_price"))
+    date_str = request.args.get("date")
+    provider_dni = (request.args.get("provider_dni") or "").strip().upper()
 
     docs = svc_list_offers(
         mongo.db,
@@ -41,14 +54,16 @@ def list_offers():
     return jsonify(docs)
 
 
-@offers_bp.route('/lookup', methods=['GET'])
+@offers_bp.route("/lookup", methods=["GET"])
 @require_roles("staff", "provider", "admin")
 def lookup_offer():
     offer_id = (request.args.get("offer_id") or "").strip()
     provider_dni = (request.args.get("provider_dni") or "").strip().upper()
 
     try:
-        res = svc_lookup_offer(mongo.db, offer_id=offer_id or None, provider_dni=provider_dni or None)
+        res = svc_lookup_offer(
+            mongo.db, offer_id=offer_id or None, provider_dni=provider_dni or None
+        )
     except ValueError:
         return jsonify({"error": "Proporciona offer_id o provider_dni"}), 400
     if res is None:
@@ -56,7 +71,7 @@ def lookup_offer():
     return jsonify(res)
 
 
-@offers_bp.route('/<offer_id>', methods=['GET'])
+@offers_bp.route("/<offer_id>", methods=["GET"])
 @require_roles("provider", "staff", "client")
 def offer_detail(offer_id):
     try:
@@ -68,7 +83,7 @@ def offer_detail(offer_id):
     return jsonify(doc)
 
 
-@offers_bp.route("/", methods=['POST'])
+@offers_bp.route("/", methods=["POST"])
 @require_roles("provider")
 def create_offer():
     data = request.get_json(force=True)
@@ -82,7 +97,7 @@ def create_offer():
     return jsonify({"message": "Oferta creada", "offer_id": str(offer_id)}), 201
 
 
-@offers_bp.route("/<offer_id>", methods=['PUT', 'PATCH'])
+@offers_bp.route("/<offer_id>", methods=["PUT", "PATCH"])
 @require_roles("provider")
 def update_offer(offer_id):
     data = request.get_json(force=True)
@@ -98,7 +113,7 @@ def update_offer(offer_id):
     return jsonify({"message": "Oferta actualizada"}), 200
 
 
-@offers_bp.route("/<offer_id>", methods=['DELETE'])
+@offers_bp.route("/<offer_id>", methods=["DELETE"])
 @require_roles("provider")
 def delete_offer(offer_id):
     user = current_user()
@@ -113,7 +128,7 @@ def delete_offer(offer_id):
     return jsonify({"message": "Oferta eliminada"}), 200
 
 
-@offers_bp.route("/<offer_id>/availability", methods=['GET'])
+@offers_bp.route("/<offer_id>/availability", methods=["GET"])
 @require_roles("client", "staff", "provider")
 def offer_availability(offer_id):
     date_str = request.args.get("date")

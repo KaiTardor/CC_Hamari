@@ -1,9 +1,19 @@
 from bson import ObjectId
-from ..utils.utils import to_float_or_none
+
 from ..utils.dates import daterange
+from ..utils.utils import to_float_or_none
 
 
-def list_offers(db, q=None, city=None, category=None, min_price=None, max_price=None, date_str=None, provider_dni=None):
+def list_offers(
+    db,
+    q=None,
+    city=None,
+    category=None,
+    min_price=None,
+    max_price=None,
+    date_str=None,
+    provider_dni=None,
+):
     base_filter = {"is_active": True}
 
     if q:
@@ -79,8 +89,16 @@ def get_offer(db, offer_id):
 
 
 def create_offer(db, data, user=None):
-    required = ["provider_dni", "title", "description", "price", "people_included",
-                "available_from", "available_to", "daily_capacity"]
+    required = [
+        "provider_dni",
+        "title",
+        "description",
+        "price",
+        "people_included",
+        "available_from",
+        "available_to",
+        "daily_capacity",
+    ]
     missing = [k for k in required if not data.get(k)]
     if missing:
         raise ValueError(f"Faltan campos: {', '.join(missing)}")
@@ -109,12 +127,14 @@ def create_offer(db, data, user=None):
 
     bulk = []
     for d in daterange(data["available_from"], data["available_to"]):
-        bulk.append({
-            "offer_id": offer_id,
-            "date": d,
-            "capacity": int(data["daily_capacity"]),
-            "booked": 0,
-        })
+        bulk.append(
+            {
+                "offer_id": offer_id,
+                "date": d,
+                "capacity": int(data["daily_capacity"]),
+                "booked": 0,
+            }
+        )
     if bulk:
         db.offer_inventory.insert_many(bulk)
 
@@ -133,8 +153,17 @@ def update_offer(db, offer_id, data, user=None):
             raise PermissionError("No autorizado para modificar dicha oferta")
 
     allowed = {
-        "title", "description", "category", "price", "people_included",
-        "location", "images", "available_from", "available_to", "daily_capacity", "is_active"
+        "title",
+        "description",
+        "category",
+        "price",
+        "people_included",
+        "location",
+        "images",
+        "available_from",
+        "available_to",
+        "daily_capacity",
+        "is_active",
     }
     update = {k: data[k] for k in data.keys() & allowed}
 
