@@ -1,5 +1,5 @@
 
-name: CC_Hamari: Publicar Docker Images despues de Tests (GHCR)
+name: CC_Hamari - Publicar Docker Images despues de Tests (GHCR)
 
 on:
   workflow_run:
