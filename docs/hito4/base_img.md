@@ -3,6 +3,37 @@
 
 Este documento describe las alternativas consideradas para montar el stack en contenedores.
 
+## Imagen base para la base de datos MongoDB 
+
+### `mongo:latest`
+
+#### Ventajas
+- Apunta la versión más reciente.
+- Permite probar nuevas funcionalidades y mejoras de MongoDB sin cambios manuales en el tag.
+
+#### Inconvenientes
+- Falta de control.
+- No es recomendable en entornos productivos donde se necesita reproducibilidad y estabilidad.
+
+[Link de referencia](https://hub.docker.com/_/mongo)
+
+
+### `mongo:7` 
+
+#### Ventajas
+- Imagen oficial basada en una versión major moderna y estable de MongoDB.
+- Mantiene compatibilidad sólida con la mayoría de drivers y clientes actuales.
+- Evita la necesidad de configurar un servidor externo.
+
+#### Inconvenientes
+- Verificar compatibilidad debido a migraciones de versiones antiguas.
+
+
+[Link de referencia](https://hub.docker.com/_/mongo)
+
+### Conclusión
+En definitiva, se ha elegido mongo:7 porque ofrece un equilibrio óptimo entre estabilidad, modernidad y control de versión.
+
 ## Imagen base para el backend (Python)
 
 ### `python:3.12-slim`
