@@ -80,7 +80,6 @@ En definitiva, se ha elegido la slim debido a que ofrece el mejor equilibrio ent
 - Requiere configuración extra.
 
 [Link de referencia 1](https://hub.docker.com/_/node)
-
 [Link de referencia 2](https://hub.docker.com/_/nginx)
 
 ### `node:22-alpine (build + runtime)` 

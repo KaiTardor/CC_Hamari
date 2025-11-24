@@ -6,7 +6,7 @@ El archivo `compose.yml` define el clúster de contenedores para la aplicación 
 
 ### hamari-mongo
 
-Servicio que proporciona la base de datos para la aplicación:
+Servicio que proporciona la base de datos para la aplicación de Hamari:
 * Imagen: `mongo:7`
 * Nombre del contenedor: `hamari-mongo`
 * Puertos:
@@ -78,7 +78,7 @@ Esto asegura el siguiente orden lógico:
 
 ## Uso
 
-1. Construir las imágenes:
+1. Construir las imagenes:
    ```
    docker-compose build
    ```
@@ -89,7 +89,7 @@ Esto asegura el siguiente orden lógico:
    ```
 
 3. Iniciar en segundo plano:
-   ```bash
+   ```
    docker-compose up -d
    ```
 

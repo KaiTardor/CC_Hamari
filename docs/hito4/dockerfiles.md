@@ -44,12 +44,10 @@ El Dockerfile del backend define el entorno necesario para ejecutar la aplicaci�
 ### **Uso**:
 
 - Construcción:
-
    ```
    docker build -t backend-app -f backend/Dockerfile .
    ```
 - Ejecución:
-
    ```
    docker run -p 5000:5000 backend-app
    ```
@@ -118,7 +116,6 @@ El Dockerfile del frontend define un flujo multi-stage para compilar una aplicac
 
 3. Copia de Artefactos de Build:
    * Se copian los archivos generados en la etapa anterior:
-
      ```
      COPY --from=build /app/dist /usr/share/nginx/html
      ```
@@ -134,7 +131,6 @@ El Dockerfile del frontend define un flujo multi-stage para compilar una aplicac
    ```
 
 - Ejecución:
-
    ```
     docker network create cc-hamari
 

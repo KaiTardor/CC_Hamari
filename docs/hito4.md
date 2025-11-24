@@ -36,6 +36,10 @@ La validación del clúster se ha automatizado mediante la integración entre wo
 
 El workflow principal de tests ejecuta automáticamente las pruebas unitarias y de integración del proyecto diseñadas en el hito 2. Una vez completado con éxito, se lanza el workflow de construcción y publicación  de imágenes Docker, que solo se ejecuta si el anterior ha finalizado sin ningun error. De esta forma, se evita la publicación de imágenes que no hayan superado las pruebas.
 
+En la siguiente imagen se puede ver la ejecución correcta de los distintos tests implementados en el hito 2 en el github Actions (Concretamente es la Test #35 y Docker Images #6):
+![Test_result](../imgs/test_result.png)
+
+
 ## Documentación adicional
 - [Imágenes base empleadas](./hito4/base_img.md)
 - [Dockerfiles de los Microservicios](./hito4/dockerfiles.md)
