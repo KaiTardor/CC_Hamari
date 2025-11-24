@@ -1,16 +1,24 @@
 # backend/routes/bookings.py
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
+
 from backend import mongo
-from backend.utils.authz import require_roles, current_user
+from backend.utils.authz import current_user, require_roles
+
+from ..services.bookings_service import (
+    create_booking as svc_create_booking,
+)
 from ..services.bookings_service import (
     list_bookings as svc_list_bookings,
-    create_booking as svc_create_booking,
+)
+from ..services.bookings_service import (
     lookup_booking as svc_lookup_booking,
+)
+from ..services.bookings_service import (
     update_booking_status as svc_update_booking_status,
 )
 
-bookings_bp = Blueprint('bookings', __name__)
+bookings_bp = Blueprint("bookings", __name__)
 
 
 @bookings_bp.route("/", methods=["GET"])
@@ -20,7 +28,9 @@ def list_bookings():
     client_dni = request.args.get("dni")
     offer_id = request.args.get("offer_id")
     try:
-        docs = svc_list_bookings(mongo.db, user, client_dni=client_dni, offer_id=offer_id)
+        docs = svc_list_bookings(
+            mongo.db, user, client_dni=client_dni, offer_id=offer_id
+        )
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     return jsonify(docs)
@@ -48,7 +58,9 @@ def lookup_booking():
     offer_id = (request.args.get("offer_id") or "").strip()
     client_dni = request.args.get("client_dni") or ""
     try:
-        items = svc_lookup_booking(mongo.db, offer_id=offer_id or None, client_dni=client_dni or None)
+        items = svc_lookup_booking(
+            mongo.db, offer_id=offer_id or None, client_dni=client_dni or None
+        )
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     return jsonify(items)

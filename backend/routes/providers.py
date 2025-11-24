@@ -1,17 +1,27 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
+
 from backend import mongo
+
 from ..services.providers_service import (
     create_provider as svc_create_provider,
-    list_providers as svc_list_providers,
-    get_provider_details as svc_get_provider_details,
-    update_provider as svc_update_provider,
+)
+from ..services.providers_service import (
     delete_provider as svc_delete_provider,
 )
+from ..services.providers_service import (
+    get_provider_details as svc_get_provider_details,
+)
+from ..services.providers_service import (
+    list_providers as svc_list_providers,
+)
+from ..services.providers_service import (
+    update_provider as svc_update_provider,
+)
 
-providers_bp = Blueprint('providers', __name__)
+providers_bp = Blueprint("providers", __name__)
 
 
-@providers_bp.route('/', methods=['POST'])
+@providers_bp.route("/", methods=["POST"])
 def create_provider():
     data = request.get_json(force=True)
     try:
@@ -21,13 +31,13 @@ def create_provider():
     return jsonify({"message": "Proveedor creado", "dni": dni}), 201
 
 
-@providers_bp.route('/', methods=['GET'])
+@providers_bp.route("/", methods=["GET"])
 def list_providers():
     docs = svc_list_providers(mongo.db)
     return jsonify(docs)
 
 
-@providers_bp.route('/<dni>', methods=['GET'])
+@providers_bp.route("/<dni>", methods=["GET"])
 def provider_details(dni):
     res = svc_get_provider_details(mongo.db, dni)
     if not res:

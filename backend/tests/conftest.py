@@ -1,17 +1,30 @@
 import os
 import re
+
 import pytest
-from testcontainers.mongodb import MongoDbContainer
 from testcontainers.core.wait_strategies import LogMessageWaitStrategy
+from testcontainers.mongodb import MongoDbContainer
+
 from backend import create_app
+
 
 def _patched_connect(self) -> None:
     pattern = re.compile(r"waiting for connections", re.MULTILINE | re.IGNORECASE)
     LogMessageWaitStrategy(pattern).wait_until_ready(self)
 
+
 MongoDbContainer._connect = _patched_connect
 
-COLLECTIONS = ["users", "offers", "offer_inventory", "bookings", "clients", "providers", "staff"]
+COLLECTIONS = [
+    "users",
+    "offers",
+    "offer_inventory",
+    "bookings",
+    "clients",
+    "providers",
+    "staff",
+]
+
 
 @pytest.fixture(scope="session")
 def mongo_uri_tmp():
@@ -23,6 +36,7 @@ def mongo_uri_tmp():
         if uri.endswith("/test"):
             uri = uri[:-5] + "/HamariDB_test"
         yield uri
+
 
 @pytest.fixture(scope="session")
 def app(mongo_uri_tmp):
@@ -36,6 +50,7 @@ def app(mongo_uri_tmp):
     with app.app_context():
         yield app
 
+
 @pytest.fixture()
 def client(app):
     """
@@ -43,12 +58,14 @@ def client(app):
     """
     return app.test_client()
 
+
 @pytest.fixture()
 def db(app):
     """
     Proporciona la base de datos limpia para cada test
     """
     from backend import mongo
+
     for col in COLLECTIONS:
         try:
             mongo.db[col].delete_many({})

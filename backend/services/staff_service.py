@@ -4,7 +4,10 @@ from ..utils.utils import is_valid_email, is_valid_phone, normalize_dni
 def create_staff(db, data):
     required = ["dni", "name", "surname", "email", "phone"]
     if any(k not in data for k in required):
-        raise ValueError("Faltan campos obligatorios. Los campos requeridos son: " + ", ".join(required))
+        raise ValueError(
+            "Faltan campos obligatorios. Los campos requeridos son: "
+            + ", ".join(required)
+        )
 
     if data.get("email") and not is_valid_email(data["email"]):
         raise ValueError("Email no válido")

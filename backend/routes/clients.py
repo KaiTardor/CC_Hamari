@@ -1,14 +1,24 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
+
 from backend import mongo
+
 from ..services.clients_service import (
     create_client as svc_create_client,
-    list_clients as svc_list_clients,
-    get_client as svc_get_client,
-    update_client as svc_update_client,
+)
+from ..services.clients_service import (
     delete_client as svc_delete_client,
 )
+from ..services.clients_service import (
+    get_client as svc_get_client,
+)
+from ..services.clients_service import (
+    list_clients as svc_list_clients,
+)
+from ..services.clients_service import (
+    update_client as svc_update_client,
+)
 
-clients_bp = Blueprint('clients', __name__)
+clients_bp = Blueprint("clients", __name__)
 
 
 @clients_bp.route("/", methods=["POST"])

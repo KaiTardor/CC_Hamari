@@ -1,6 +1,9 @@
 from functools import wraps
-from flask import request, jsonify
+
+from flask import jsonify, request
+
 from .jwt import decode_jwt
+
 
 def current_user():
     """Extrae el usuario actual del header Authorization.
@@ -21,11 +24,13 @@ def current_user():
             }
     return None
 
+
 def require_roles(*roles):
     """Decorador de rutas para exigir roles.
 
     Uso: @require_roles("client", "staff") — permite esos roles + admin.
     """
+
     def deco(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
@@ -37,5 +42,7 @@ def require_roles(*roles):
                 return jsonify({"error": "No autorizado"}), 403
             request.user = user
             return fn(*args, **kwargs)
+
         return wrapper
+
     return deco

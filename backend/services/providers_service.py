@@ -38,7 +38,11 @@ def get_provider_details(db, dni):
         return None
     offers = list(db.offers.find({"provider_dni": dni}))
     offer_ids = [o["_id"] for o in offers]
-    sales_count = db.bookings.count_documents({"offer_id": {"$in": offer_ids}}) if offer_ids else 0
+    sales_count = (
+        db.bookings.count_documents({"offer_id": {"$in": offer_ids}})
+        if offer_ids
+        else 0
+    )
 
     for o in offers:
         o["_id"] = str(o["_id"])

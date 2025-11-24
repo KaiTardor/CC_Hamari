@@ -1,9 +1,10 @@
 from flask import Flask, jsonify
-from flask_pymongo import PyMongo
 from flask_cors import CORS
+from flask_pymongo import PyMongo
+
 from .config import Config
-from .utils.index import *
 from .logging import setup_logging
+from .utils.index import *
 
 # Inicializamos PyMongo global
 mongo = PyMongo()
@@ -28,12 +29,12 @@ def create_app():
     index(mongo)
 
     # Importar y registrar Blueprints
-    from .routes.offers import offers_bp
+    from .routes.auth import auth_bp
     from .routes.bookings import bookings_bp
     from .routes.clients import clients_bp
+    from .routes.offers import offers_bp
     from .routes.providers import providers_bp
     from .routes.staff import staff_bp
-    from .routes.auth import auth_bp
 
     app.register_blueprint(offers_bp, url_prefix="/api/offers")
     app.register_blueprint(bookings_bp, url_prefix="/api/bookings")

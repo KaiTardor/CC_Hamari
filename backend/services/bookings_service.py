@@ -1,5 +1,6 @@
 from bson import ObjectId
 from pymongo import ReturnDocument
+
 from ..utils.utils import normalize_dni
 
 
@@ -29,12 +30,12 @@ def list_bookings(db, user, client_dni=None, offer_id=None):
 
 
 def create_booking(db, user, data):
-    offer_id = data.get('offer_id')
-    date_str = (data.get('date') or "").strip()
+    offer_id = data.get("offer_id")
+    date_str = (data.get("date") or "").strip()
     if user["role"] == "client":
         client_dni = normalize_dni(user.get("ref_dni") or "")
     else:
-        client_dni = normalize_dni(data.get('client_dni') or "")
+        client_dni = normalize_dni(data.get("client_dni") or "")
 
     if not offer_id or not client_dni or not date_str:
         raise ValueError("offer_id, client_dni y date son obligatorios")
@@ -51,17 +52,28 @@ def create_booking(db, user, data):
         raise LookupError("La oferta no existe o no está disponible")
 
     inv = db.offer_inventory.find_one_and_update(
-        {"offer_id": _offer_id, "date": date_str, "$expr": {"$lt": ["$booked", "$capacity"]}},
+        {
+            "offer_id": _offer_id,
+            "date": date_str,
+            "$expr": {"$lt": ["$booked", "$capacity"]},
+        },
         {"$inc": {"booked": 1}},
         return_document=ReturnDocument.AFTER,
     )
     if not inv:
         raise RuntimeError("No hay disponibilidad para la fecha seleccionada")
 
-    res_doc = {"offer_id": _offer_id, "client_dni": client_dni, "date": date_str, "status": "PENDING"}
+    res_doc = {
+        "offer_id": _offer_id,
+        "client_dni": client_dni,
+        "date": date_str,
+        "status": "PENDING",
+    }
     ins = db.bookings.insert_one(res_doc)
     res_doc["_id"] = str(ins.inserted_id)
-    res_doc["offer_id"] = str(res_doc["offer_id"]) if res_doc.get("offer_id") is not None else None
+    res_doc["offer_id"] = (
+        str(res_doc["offer_id"]) if res_doc.get("offer_id") is not None else None
+    )
     return res_doc
 
 
@@ -104,7 +116,9 @@ def update_booking_status(db, booking_id, new_status, user):
 
     prev_status = bk.get("status")
     if new_status == "CANCELLED" and prev_status != "CANCELLED":
-        db.offer_inventory.update_one({"offer_id": bk["offer_id"], "date": bk["date"]}, {"$inc": {"booked": -1}})
+        db.offer_inventory.update_one(
+            {"offer_id": bk["offer_id"], "date": bk["date"]}, {"$inc": {"booked": -1}}
+        )
 
     res = db.bookings.update_one({"_id": _bid}, {"$set": {"status": new_status}})
     if res.matched_count == 0:
