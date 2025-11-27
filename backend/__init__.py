@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 
@@ -8,21 +8,6 @@ from .utils.index import *
 
 # Inicializamos PyMongo global
 mongo = PyMongo()
-
-
-def _normalize_api_path(path: str) -> tuple[str, bool]:
-    """Remueve prefijos /api duplicados para soportar proxies que lo repiten."""
-    prefix = "/api"
-    if not path.startswith(prefix):
-        return path, False
-
-    remainder = path[len(prefix) :]
-    changed = False
-    while remainder.startswith(prefix):
-        remainder = remainder[len(prefix) :]
-        changed = True
-
-    return prefix + remainder, changed
 
 
 def create_app():
@@ -42,16 +27,6 @@ def create_app():
     mongo.init_app(app)
     app.mongo = mongo
     index(mongo)
-
-    @app.before_request
-    def _dedupe_api_prefix():
-        path = request.environ.get("PATH_INFO", "")
-        new_path, changed = _normalize_api_path(path)
-        if changed:
-            request.environ["PATH_INFO"] = new_path
-            app.logger.warning(
-                "Ruta con prefijo duplicado detectada: %s -> %s", path, new_path
-            )
 
     # Importar y registrar Blueprints
     from .routes.auth import auth_bp
