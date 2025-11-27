@@ -66,6 +66,9 @@ jobs:
           context: .
           file: ./frontend/Dockerfile
           push: true
+          build-args: |
+            VITE_API_BASE=
           tags: |
             ghcr.io/${{ steps.owner.outputs.owner }}/cc-hamari-frontend:latest
+
 

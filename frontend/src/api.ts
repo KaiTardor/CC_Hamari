@@ -6,7 +6,7 @@ export const api = axios.create({
   baseURL: API_BASE,
   headers: { "Content-Type": "application/json" },
 });
-
+ 
 export type Offer = {
   _id: string;
   provider_dni: string;
