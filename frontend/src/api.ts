@@ -1,24 +1,17 @@
 import axios from "axios";
 
-// En Docker prod usamos /api (nginx → back)
-const API_BASE = (import.meta.env.VITE_API_BASE || "/api").trim();
+const RAW_BASE = (import.meta.env.VITE_API_BASE ?? "").trim();
+
+const API_BASE =
+  RAW_BASE === ""
+    ? "/api"
+    : RAW_BASE.endsWith("/api")
+      ? RAW_BASE
+      : RAW_BASE.replace(/\/$/, "") + "/api";
 
 export const api = axios.create({
   baseURL: API_BASE,
   headers: { "Content-Type": "application/json" },
-});
-
-// Interceptor para evitar URLs con doble slash // o /api/api
-api.interceptors.request.use((config) => {
-  if (config.url) {
-    // Si baseURL ya tiene /api y la url empieza por /api, lo quitamos de la url
-    if (config.baseURL?.endsWith("/api") && config.url.startsWith("/api/")) {
-      config.url = config.url.replace(/^\/api\//, "/");
-    }
-    // Normalizar dobles slashes
-    config.url = config.url.replace(/([^:]\/)\/+/g, "$1");
-  }
-  return config;
 });
  
 export type Offer = {
