@@ -1,9 +1,9 @@
 import axios from "axios";
 
 // En Docker prod usamos /api (nginx → back)
-const API_BASE = (import.meta.env.VITE_API_BASE ?? "").trim();
+const API_BASE = ((import.meta.env.VITE_API_BASE ?? "/api").trim() || "/api");
 export const api = axios.create({
-  baseURL: (API_BASE ? API_BASE : "") + "/api",
+  baseURL: API_BASE,
   headers: { "Content-Type": "application/json" },
 });
 
