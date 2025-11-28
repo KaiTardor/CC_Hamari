@@ -9,6 +9,9 @@ const API_BASE =
       ? RAW_BASE
       : RAW_BASE.replace(/\/$/, "") + "/api";
 
+console.log("RAW_BASE =", RAW_BASE);
+console.log("API_BASE =", API_BASE);
+
 export const api = axios.create({
   baseURL: API_BASE,
   headers: { "Content-Type": "application/json" },
