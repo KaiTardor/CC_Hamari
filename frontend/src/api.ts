@@ -1,12 +1,31 @@
 import axios from "axios";
 
-// En Docker prod usamos /api (nginx → back)
-const API_BASE = (import.meta.env.VITE_API_BASE ?? "").trim();
+const RAW_BASE = (import.meta.env.VITE_API_BASE ?? "").trim();
+
+const API_BASE =
+  RAW_BASE === ""
+    ? "/api"
+    : RAW_BASE.endsWith("/api")
+      ? RAW_BASE
+      : RAW_BASE.replace(/\/+$/, "") + "/api";
+
+console.log("RAW_BASE =", JSON.stringify(RAW_BASE));
+console.log("API_BASE =", API_BASE);
+
 export const api = axios.create({
-  baseURL: (API_BASE ? API_BASE : "") + "/api",
+  baseURL: API_BASE,
   headers: { "Content-Type": "application/json" },
 });
 
+api.interceptors.request.use((config) => {
+  console.log(
+    "[API REQUEST]",
+    "baseURL =", config.baseURL,
+    "url =", config.url
+  );
+  return config;
+});
+ 
 export type Offer = {
   _id: string;
   provider_dni: string;

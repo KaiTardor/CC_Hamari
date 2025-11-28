@@ -4,8 +4,6 @@ on:
   workflow_run:
     workflows: ["Tests"]
     types: [completed]
-  push:
-    branches: [ Test ]
 
 permissions:
   contents: read
@@ -15,7 +13,7 @@ jobs:
   publish:
     name: Build and push images to GHCR
     runs-on: ubuntu-latest
-    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || (github.event_name == 'push' && github.ref == 'refs/heads/Test') }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -66,6 +64,9 @@ jobs:
           context: .
           file: ./frontend/Dockerfile
           push: true
+          build-args: |
+            VITE_API_BASE=
           tags: |
             ghcr.io/${{ steps.owner.outputs.owner }}/cc-hamari-frontend:latest
+
 
