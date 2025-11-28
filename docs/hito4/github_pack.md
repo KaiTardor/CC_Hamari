@@ -5,18 +5,13 @@ En este documento se describe el flujo de trabajo configurado en GitHub Actions 
 
 ## Eventos que Activan el Workflow
 
-Dicho workflow se ejecuta en dos casos:
-
-1. Cuando finaliza el workflow "Tests" solamente cuando haya sido exitoso:
-2. Cuando hay un push a la rama Test:
+Dicho workflow se ejecuta cuando finaliza el workflow "Tests" solamente cuando haya sido exitoso:
 
 ```
 on:
   workflow_run:
     workflows: ["Tests"]
     types: [completed]
-  push:
-    branches: [ Test ]
 ```
 
 Esto asegura que las imágenes Docker solo se publiquen cuando el pipeline de tests ha pasado con éxito, o cuando se realiza un push explícito sobre la rama de Test, o en otras palabras, una versión estable y funcional antes de la entrega en main.
@@ -45,7 +40,7 @@ jobs:
   publish:
     name: Build and push images to GHCR
     runs-on: ubuntu-latest
-    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') || (github.event_name == 'push' && github.ref == 'refs/heads/Test') }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 ```
 
 * Sistema Operativo: `ubuntu-latest`
@@ -128,7 +123,7 @@ Construye la imagen del backend usando el Dockerfile ubicado en `./backend/Docke
       ghcr.io/${{ steps.owner.outputs.owner }}/cc-hamari-backend:latest
 ```
 
-* Tag generado (ejemplo):
+* Tag generado (de ejemplo):
   * `ghcr.io/<owner>/cc-hamari-backend:latest`
 
 ### 8. Build y Push de la Imagen del Frontend
@@ -143,7 +138,7 @@ Construye la imagen del frontend usando el Dockerfile en `./frontend/Dockerfile`
     tags: |
       ghcr.io/${{ steps.owner.outputs.owner }}/cc-hamari-frontend:latest
 ```
-* Tag generado (ejemplo):
+* Tag generado (de ejemplo):
   * `ghcr.io/<owner>/cc-hamari-frontend:latest`
 
 Ambas imágenes quedan disponibles en GHCR para su uso en despliegues posteriores.
