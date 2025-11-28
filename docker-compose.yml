@@ -34,7 +34,7 @@ services:
       context: .
       dockerfile: frontend/Dockerfile
       args:
-        VITE_API_BASE: ""
+        - VITE_API_BASE=
     # Imagen objetivo para publicación (GHCR) 
     image: ghcr.io/kaitardor/cc-hamari-frontend:latest
     container_name: hamari-frontend
