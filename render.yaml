@@ -4,21 +4,26 @@ services:
   runtime: docker
   plan: free
   region: frankfurt
+
   dockerContext: .
   dockerfilePath: ./Dockerfile
   rootDir: .
+
   healthCheckPath: /health
+
   envVars:
   - key: MONGO_URI
     sync: false
 
+
 - type: web
   name: hamari-frontend
   runtime: static
-  plan: free
+
   rootDir: ./frontend
   buildCommand: npm ci && npm run build
   staticPublishPath: dist
+
   envVars:
   - key: VITE_API_BASE
     value: https://hamari-backend.onrender.com
