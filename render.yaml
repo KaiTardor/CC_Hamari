@@ -1,3 +1,7 @@
+A render.yaml file was found, but there was an issue.
+
+unknown type "static_site"
+
 services:
   - type: web
     name: hamari-backend
@@ -10,7 +14,6 @@ services:
     envVars:
       - key: MONGO_URI
         sync: false
-
   - type: static_site
     name: hamari-frontend
     plan: free
