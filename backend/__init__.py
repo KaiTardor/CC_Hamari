@@ -48,5 +48,9 @@ def create_app():
     @app.route("/")
     def home():
         return jsonify({"message": "API de Turismo activa y conectada"}), 200
+    
+    @app.get("/health")
+    def health():
+        return jsonify({"ok": True}), 200
 
     return app

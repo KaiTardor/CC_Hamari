@@ -90,6 +90,13 @@ Este documento describe las alternativas consideradas para desplegar el proyecto
 
 [Link de referencia](https://cloud.google.com/appengine)
 
-# Conclusión
+## Conclusión
 
 En definitiva, se ha elegido Render porque ofrece el mejor equilibrio entre simplicidad, soporte para contenedores, despliegue automatizado y un free tier real que permite desarrollar y probar sin coste. Resulta especialmente adecuado para un proyecto modular como este, evitando complejidad innecesaria y garantizando un despliegue limpio, ágil y mantenible.
+
+
+## Documentación adicional
+- [Hito 5](../hito5.md)
+- [Comparativa iaas o paas](./comparativa.md.md)
+- [Descripción del deployment](./deploy.md)
+- [Descripción de la integración con github Actions](./github_deploy.md)

@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: hamari-backend
+    env: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: Dockerfile
+    rootDir: .
+    healthCheckPath: /health
+    envVars:
+      - key: MONGO_URI
+        sync: false
+
+  - type: static_site
+    name: hamari-frontend
+    plan: free
+    region: frankfurt
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    publishPath: dist
+    envVars:
+      - key: VITE_API_BASE
+        value: https://hamari-backend.onrender.com
