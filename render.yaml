@@ -1,26 +1,31 @@
-A render.yaml file was found, but there was an issue.
-
-unknown type "static_site"
-
 services:
-  - type: web
-    name: hamari-backend
-    env: docker
-    plan: free
-    region: frankfurt
-    dockerfilePath: Dockerfile
-    rootDir: .
-    healthCheckPath: /health
-    envVars:
-      - key: MONGO_URI
-        sync: false
-  - type: static_site
-    name: hamari-frontend
-    plan: free
-    region: frankfurt
-    rootDir: frontend
-    buildCommand: npm ci && npm run build
-    publishPath: dist
-    envVars:
-      - key: VITE_API_BASE
-        value: https://hamari-backend.onrender.com
+- type: web
+  name: hamari-backend
+  runtime: docker
+  plan: free
+  region: frankfurt
+
+  dockerContext: .
+  dockerfilePath: ./Dockerfile
+  rootDir: .
+
+  healthCheckPath: /health
+
+  envVars:
+  - key: MONGO_URI
+    sync: false
+
+
+- type: web
+  name: hamari-frontend
+  runtime: static
+  plan: free
+  region: frankfurt
+
+  rootDir: ./frontend
+  buildCommand: npm ci && npm run build
+  staticPublishPath: dist
+
+  envVars:
+  - key: VITE_API_BASE
+    value: https://hamari-backend.onrender.com
