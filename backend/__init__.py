@@ -20,8 +20,29 @@ def create_app():
     # Inicializar logging (loguru)
     setup_logging(app)
 
-    # CORS para permitir peticiones desde frontend React
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # CORS para permitir peticiones desde el frontend en Render
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": ["https://hamari-frontend.onrender.com"]}},
+        supports_credentials=False
+    )
+
+    # Forzar cabeceras CORS en todas las respuestas (incluye OPTIONS)
+    @app.after_request
+    def add_cors_headers(response):
+        response.headers.add(
+            "Access-Control-Allow-Origin",
+            "https://hamari-frontend.onrender.com"
+        )
+        response.headers.add(
+            "Access-Control-Allow-Headers",
+            "Content-Type,Authorization"
+        )
+        response.headers.add(
+            "Access-Control-Allow-Methods",
+            "GET,POST,PUT,DELETE,OPTIONS"
+        )
+        return response
 
     # Inicializar MongoDB
     mongo.init_app(app)
@@ -41,14 +62,14 @@ def create_app():
     app.register_blueprint(clients_bp, url_prefix="/api/clients")
     app.register_blueprint(providers_bp, url_prefix="/api/providers")
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
-
     app.register_blueprint(staff_bp, url_prefix="/api/staff")
 
     # Ruta raíz para verificar que el backend funciona
     @app.route("/")
     def home():
         return jsonify({"message": "API de Turismo activa y conectada"}), 200
-    
+
+    # Health check para Render
     @app.get("/health")
     def health():
         return jsonify({"ok": True}), 200
