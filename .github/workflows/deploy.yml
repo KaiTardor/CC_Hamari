@@ -1,0 +1,22 @@
+name: Deploy en Render
+
+on:
+  workflow_run:
+    workflows: ["Docker Images"]
+    types: [completed]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'Test'
+
+    steps:
+      - name: Trigger backend deploy
+        run: curl -X POST \
+        https://api.render.com/deploy/srv-d54hli5actks73afqg5g?key=E7-h3uVQp4I
+
+      - name: Trigger frontend deploy
+        run: curl -X POST \
+        https://api.render.com/deploy/srv-d54hli5actks73afqg40?key=CtN-wMgCLlY
