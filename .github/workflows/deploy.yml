@@ -14,9 +14,7 @@ jobs:
 
     steps:
       - name: Trigger backend deploy
-        run: curl -X POST \
-        https://api.render.com/deploy/srv-d54hli5actks73afqg5g?key=E7-h3uVQp4I
+        run: curl -fsS -X POST "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}"
 
       - name: Trigger frontend deploy
-        run: curl -X POST \
-        https://api.render.com/deploy/srv-d54hli5actks73afqg40?key=CtN-wMgCLlY
+        run: curl -fsS -X POST "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}"
