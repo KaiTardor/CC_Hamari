@@ -19,4 +19,4 @@ ENV FLASK_PORT=5000
 EXPOSE 5000
 
 # Gunicorn para producción simple
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["sh", "-c", "gunicorn -w 2 -b 0.0.0.0:${PORT:-5000} app:app"]

@@ -4,7 +4,7 @@ import re
 import pytest
 from testcontainers.core.wait_strategies import LogMessageWaitStrategy
 from testcontainers.mongodb import MongoDbContainer
-
+from backend.utils.jwt import create_jwt
 from backend import create_app
 
 
@@ -72,3 +72,34 @@ def db(app):
         except Exception:
             pass
     return mongo.db
+
+@pytest.fixture()
+def admin_headers():
+    token = create_jwt(
+        {"sub": "test-admin", "username": "admin@test", "role": "admin", "ref_dni": None}
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture()
+def staff_headers():
+    token = create_jwt(
+        {"sub": "test-staff", "username": "staff@test", "role": "staff", "ref_dni": "34567890D"}
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture()
+def client_headers():
+    token = create_jwt(
+        {"sub": "test-client", "username": "client@test", "role": "client", "ref_dni": "12345678A"}
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture()
+def provider_headers():
+    token = create_jwt(
+        {"sub": "test-provider", "username": "provider@test", "role": "provider", "ref_dni": "23456789C"}
+    )
+    return {"Authorization": f"Bearer {token}"}

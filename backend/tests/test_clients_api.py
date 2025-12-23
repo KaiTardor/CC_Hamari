@@ -1,5 +1,4 @@
 from bson import ObjectId
-from werkzeug.security import generate_password_hash
 
 
 def seed_client(db, dni, **kwargs):
@@ -22,7 +21,7 @@ def seed_client(db, dni, **kwargs):
 # ========== TESTS DE CREACIÓN ==========
 
 
-def test_create_client_ok(client, db):
+def test_create_client_ok(client, db, admin_headers):
     """
     Crear cliente con todos los campos
     """
@@ -35,16 +34,15 @@ def test_create_client_ok(client, db):
         "sex": "M",
         "birth_date": "01/01/1990",
     }
-    r = client.post("/api/clients/", json=payload)
+    r = client.post("/api/clients/", json=payload, headers=admin_headers)
     assert r.status_code == 201
 
-    # Verificar que se creó
     created = db.clients.find_one({"dni": "12345678A"})
     assert created is not None
     assert created["name"] == "Nombre"
 
 
-def test_create_client_missing_fields(client, db):
+def test_create_client_missing_fields(client, db, admin_headers):
     """
     Error cuando faltan campos obligatorios
     """
@@ -53,11 +51,11 @@ def test_create_client_missing_fields(client, db):
         "name": "Nombre",
         # Faltan surname, email, phone
     }
-    r = client.post("/api/clients/", json=payload)
+    r = client.post("/api/clients/", json=payload, headers=admin_headers)
     assert r.status_code == 400
 
 
-def test_create_client_duplicate(client, db):
+def test_create_client_duplicate(client, db, admin_headers):
     """
     Error al crear cliente con DNI duplicado
     """
@@ -70,28 +68,33 @@ def test_create_client_duplicate(client, db):
         "email": "otro@email.com",
         "phone": "600222333",
     }
-    r = client.post("/api/clients/", json=payload)
+    r = client.post("/api/clients/", json=payload, headers=admin_headers)
     assert r.status_code == 400
 
 
 # ========== TESTS DE LISTADO ==========
-def test_list_clients_with_data(client, db):
+
+
+def test_list_clients_with_data(client, db, admin_headers):
     """
     Listar todos los clientes
     """
     seed_client(db, "11111111A", name="Cliente1")
     seed_client(db, "22222222B", name="Cliente2")
 
-    r = client.get("/api/clients/")
+    r = client.get("/api/clients/", headers=admin_headers)
     assert r.status_code == 200
     clients = r.get_json()
     assert len(clients) == 2
 
 
 # ========== TESTS DE DETALLE ==========
+
+
 def test_get_client_detail(client, db):
     """
     Obtener detalles de un cliente
+    (si tu endpoint de detalle está protegido, añade headers aquí también)
     """
     seed_client(db, "12345678A", name="Nombre")
 
@@ -104,50 +107,54 @@ def test_get_client_detail(client, db):
 def test_get_client_not_found(client, db):
     """
     Error cuando cliente no existe
+    (si tu endpoint de detalle está protegido, añade headers aquí también)
     """
     r = client.get("/api/clients/99999999X")
     assert r.status_code == 404
 
 
 # ========== TESTS DE ACTUALIZACIÓN ==========
-def test_update_client(client, db):
+
+
+def test_update_client(client, db, admin_headers):
     """
     Actualizar datos de un cliente
     """
     seed_client(db, "12345678A", name="Nombre")
 
     r = client.patch(
-        "/api/clients/12345678A", json={"name": "Nombre_Nuevo", "phone": "666777888"}
+        "/api/clients/12345678A",
+        json={"name": "Nombre_Nuevo", "phone": "666777888"},
+        headers=admin_headers,
     )
     assert r.status_code == 200
 
-    # Verificar cambios
     updated = db.clients.find_one({"dni": "12345678A"})
     assert updated["name"] == "Nombre_Nuevo"
     assert updated["phone"] == "666777888"
 
 
 # ========== TESTS DE ELIMINACIÓN ==========
-def test_delete_client(client, db):
+
+
+def test_delete_client(client, db, admin_headers):
     """
     Eliminar un cliente
     """
     seed_client(db, "12345678A")
 
-    r = client.delete("/api/clients/12345678A")
+    r = client.delete("/api/clients/12345678A", headers=admin_headers)
     assert r.status_code == 200
 
-    # Verificar eliminación
     assert db.clients.find_one({"dni": "12345678A"}) is None
 
 
-def test_delete_client_removes_bookings(client, db):
+def test_delete_client_removes_bookings(client, db, admin_headers):
     """
     Eliminar cliente también elimina sus reservas
     """
     seed_client(db, "12345678A")
 
-    # Crear una reserva para el cliente
     db.bookings.insert_one(
         {
             "offer_id": ObjectId(),
@@ -159,8 +166,6 @@ def test_delete_client_removes_bookings(client, db):
 
     assert db.bookings.count_documents({"client_dni": "12345678A"}) == 1
 
-    # Eliminar cliente
-    client.delete("/api/clients/12345678A")
+    client.delete("/api/clients/12345678A", headers=admin_headers)
 
-    # Verificar que se eliminaron las reservas
     assert db.bookings.count_documents({"client_dni": "12345678A"}) == 0
