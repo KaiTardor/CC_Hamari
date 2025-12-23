@@ -86,27 +86,34 @@ export default function AdminUsersPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const endpoint = activeTab === "clients" ? "/clients/" : activeTab === "providers" ? "/providers/" : "/staff/";
+      const endpoint =
+        activeTab === "clients"
+          ? "/clients/"
+          : activeTab === "providers"
+          ? "/providers/"
+          : "/staff/";
+
       await api.post(endpoint, formData);
-      
-      // Crear usuario también si es proveedor o staff
-      if (activeTab === "providers" || activeTab === "staff") {
-        const username = formData.username || formData.dni;
-        const password = formData.password || "123456"; // Contraseña temporal
-        const role = activeTab === "providers" ? "provider" : "staff";
-        
+
+      // Crear usuario de login en users para provider, staff y client
+      if (activeTab === "providers" || activeTab === "staff" || activeTab === "clients") {
+        const username = (formData.username as string) || (formData.dni as string);
+        const password = (formData.password as string) || "123456"; // temporal (mejor pedirla)
+        const role =
+          activeTab === "providers" ? "provider" : activeTab === "staff" ? "staff" : "client";
+
         try {
-          await api.post("/users/create", {
+          await api.post("/auth/users/create", {
             username,
             password,
             role,
-            ref_dni: formData.dni as string | undefined,
+            ref_dni: formData.dni as string,
           });
-        } catch (userErr: unknown) {
+        } catch (userErr) {
           console.warn("Usuario podría ya existir:", userErr);
         }
       }
-      
+
       setShowForm(false);
       setFormData({});
       loadData();
@@ -115,6 +122,7 @@ export default function AdminUsersPage() {
       alert(e.response?.data?.error ?? e.message ?? "Error al crear");
     }
   };
+
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

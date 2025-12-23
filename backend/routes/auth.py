@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
-
+from ..utils.authz import require_roles
 from ..utils.jwt import *
 from ..utils.utils import is_valid_email, is_valid_phone, normalize_dni
 
@@ -156,6 +156,7 @@ def register():
 
 
 @auth_bp.post("/users/create")
+@require_roles("admin")
 def create_user():
     """Crea un usuario de sistema (admin, provider, staff).
     Solo accesible por administradores.

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-
+from ..utils.authz import *
 from backend import mongo
 
 from ..services.clients_service import (
@@ -22,6 +22,7 @@ clients_bp = Blueprint("clients", __name__)
 
 
 @clients_bp.route("/", methods=["POST"])
+@require_roles("admin")
 def create_client():
     data = request.get_json(force=True)
     try:
@@ -32,6 +33,7 @@ def create_client():
 
 
 @clients_bp.route("/", methods=["GET"])
+@require_roles("admin", "staff")
 def list_clients():
     clients = svc_list_clients(mongo.db)
     return jsonify(clients), 200
@@ -46,6 +48,7 @@ def client_detail(dni):
 
 
 @clients_bp.route("/<dni>", methods=["PUT", "PATCH"])
+@require_self_or_admin("dni")
 def update_client(dni):
     data = request.get_json(force=True)
     try:
@@ -58,6 +61,7 @@ def update_client(dni):
 
 
 @clients_bp.route("/<dni>", methods=["DELETE"])
+@require_roles("admin")
 def delete_client(dni):
     ok = svc_delete_client(mongo.db, dni)
     if not ok:
