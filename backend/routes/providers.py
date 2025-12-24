@@ -33,7 +33,6 @@ def create_provider():
 
 
 @providers_bp.route("/", methods=["GET"])
-@require_roles("admin", "staff")
 def list_providers():
     docs = svc_list_providers(mongo.db)
     return jsonify(docs)
