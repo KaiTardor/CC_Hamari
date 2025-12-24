@@ -70,9 +70,39 @@ El despliegue continuo se realiza automáticamente por Render. Cada vez que se d
 
 ### Pruebas de rendimiento 
 
+Para evaluar las prestaciones del backend desplegado en Render se ha utilizado k6, una herramienta orientada a pruebas de carga HTTP. Dado que la aplicación se ejecuta en el plan gratuito del PaaS, se ha definido un escenario de carga ligero, con el objetivo de obtener métricas representativas sin comprometer la estabilidad del servicio.
 
+Escenario de prueba
+    * Tipo de prueba: carga ligera con rampa de usuarios (ramping virtual users).
+    * Usuarios virtuales máximos: 5.
+    * Duración total: 50 segundos.
+    * Usuario utilizado: cuenta estándar (no administradora).
+    * Endpoints evaluados:
+        * GET /health
+        * POST /api/auth/login
+        * GET /api/providers
+        * GET /api/offers
+    * Umbrales definidos:
+        * Tasa de errores inferior al 2%.
+        * Percentil 95 de latencia inferior a 2000 ms.
 
+El script de prueba es k6.js y parametriza credenciales y URL base mediante variables de entorno, facilitando su reutilización. Se puede ejecutar con el siguiente comando: 
 
+```
+ docker run --rm -i grafana/k6 run \
+  -e BASE_URL=https://hamari-backend.onrender.com \
+  -e USER_EMAIL="23456789C" \
+  -e USER_PASS="provider123" \
+  - < k6.js
+```
+Tal como se puede ver en la imagen:
+- Latencia (http_req_duration): El 95% de las peticiones tardaron menos de 1.9 segundos
+- Tasa de errores (http_req_failed): No hubo errores durante la ejecucion de la prueba
+- Checks: Todas las comprobaciones pasaron (155 de 155) de las rutas seleccionadas
+
+![Test results](../imgs/perfomance_result.png)
+
+![Summary](../imgs/sum_perfomance.png)
 
 ## Documentación adicional
 - [Comparativa Iaas o Paas](./hito5/comparativa.md)

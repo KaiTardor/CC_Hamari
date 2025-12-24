@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
 export default function LoginPage() {
@@ -119,9 +119,9 @@ export default function LoginPage() {
 
         <p style={{ textAlign: "center", color: "var(--color-text-muted)", marginTop: 8 }}>
           ¿No tienes cuenta?{" "}
-          <a href="/register" style={{ color: "var(--color-cyan)", textDecoration: "none" }}>
-            Regístrate aquí
-          </a>
+          <Link to="/register" style={{ color: "var(--color-cyan)", textDecoration: "none" }}>
+          Regístrate aquí
+          </Link>
         </p>
       </form>
     </div>

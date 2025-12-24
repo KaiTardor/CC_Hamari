@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link , useNavigate } from "react-router-dom";
 import { api } from "../api";
 
 export default function RegisterPage() {
@@ -310,8 +310,8 @@ export default function RegisterPage() {
               }}
             >
               <option value="">Seleccionar...</option>
-              <option value="M">Masculino</option>
-              <option value="F">Femenino</option>
+              <option value="M">Hombre</option>
+              <option value="F">Mujer</option>
               <option value="O">Otro</option>
             </select>
           </div>
@@ -354,9 +354,9 @@ export default function RegisterPage() {
 
         <p style={{ textAlign: "center", color: "var(--color-text-muted)", marginTop: 8 }}>
           ¿Ya tienes cuenta?{" "}
-          <a href="/login" style={{ color: "var(--color-cyan)", textDecoration: "none" }}>
-            Inicia sesión aquí
-          </a>
+          <Link to="/login" style={{ color: "var(--color-cyan)", textDecoration: "none" }}>
+          Inicia sesión aquí
+          </Link>
         </p>
       </form>
     </div>
