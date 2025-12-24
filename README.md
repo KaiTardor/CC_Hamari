@@ -36,3 +36,8 @@ Este proyecto consiste en desarrollar una aplicación que permita a la empresa H
     - Documentación sobre la actualización, subida y publicación a [Github Packages](./docs/hito4/github_pack.md)
 
 ## Hito 5
+- [Despliegue automático al PaaS](./docs/hito5.md)
+    - Documentación sobre la elección entre [Iaas o Paas](./docs/hito5/comparativa.md)
+    - Documentación sobre la comparativa entre [distintos PaaS](./docs/hito5/paas.md)
+    - Documentación sobre la herramienta de [despliegue Render](./docs/hito5/deploy.md)
+    - Documentación sobre el despliegue automatizado con [GitHub Acitons](./docs/hito5/github_deploy.md)

@@ -76,7 +76,7 @@ Escenario de prueba
     * Tipo de prueba: carga ligera con rampa de usuarios (ramping virtual users).
     * Usuarios virtuales máximos: 5.
     * Duración total: 50 segundos.
-    * Usuario utilizado: cuenta estándar (no administradora).
+    * Usuario utilizado: cuenta estándar (cliente). 
     * Endpoints evaluados:
         * GET /health
         * POST /api/auth/login
@@ -95,6 +95,7 @@ El script de prueba es k6.js y parametriza credenciales y URL base mediante vari
   -e USER_PASS="provider123" \
   - < k6.js
 ```
+
 Tal como se puede ver en la imagen:
 - Latencia (http_req_duration): El 95% de las peticiones tardaron menos de 1.9 segundos
 - Tasa de errores (http_req_failed): No hubo errores durante la ejecucion de la prueba
