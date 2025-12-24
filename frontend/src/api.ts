@@ -37,6 +37,7 @@ export type Offer = {
   available_to: string;   // "DD/MM/AAAA"
   daily_capacity: number;
   is_active: boolean;
+  images?: string[]; 
 };
 
 export type Booking = {

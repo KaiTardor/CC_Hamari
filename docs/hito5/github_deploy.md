@@ -1,104 +1,57 @@
 # Descripción de la Configuración para el despliegue automático desde GitHub
 
-Para automatizar el despliegue de la aplicación Hamari al PaaS Render, se ha implementado un flujo de trabajo de CI/CD utilizando GitHub Actions. Esta configuración permite que la aplicación se despliegue automáticamente tras la validación del código, garantizando que únicamente versiones verificadas lleguen al entorno de producción.
+Para el proyecto Hamari, el despliegue automático al PaaS Render se ha diseñado siguiendo una separación clara entre Integración Continua (CI) y Despliegue Continuo (CD).
+La validación del código se realiza mediante GitHub Actions, mientras que el despliegue automático es gestionado directamente por Render a través de Render Blueprints y el archivo render.yaml.
 
-El despliegue se realiza mediante Deploy Hooks de Render, integrados de forma segura con GitHub Actions, evitando la exposición de credenciales sensibles y manteniendo una separación clara entre las fases de validación y despliegue.
+Este enfoque permite simplificar la arquitectura del pipeline, reducir la complejidad operativa y mantener un flujo de despliegue reproducible y controlado.
 
-## Evento que Dispara el Flujo de Trabajo
+## Integración Continua con Github actions
 
-El flujo de trabajo de despliegue se activa de forma automática cuando se cumplen las siguientes condiciones:
+La pipeline de CI está compuesta por varios workflows independientes que cubren las siguientes tareas:
 
-* **Finalización correcta del workflow Docker Images**:
-  El despliegue solo se ejecuta si el workflow encargado de construir y publicar las imágenes Docker finaliza con éxito.
-* **Rama Test**:
-  El despliegue automático se restringe a dicha rama, utilizada como rama de integración y experimentación, evitando despliegues accidentales desde ramas no controladas.
+1. Pruebas del Backend
+  - Ejecución de tests automáticos con pytest.
+  - Uso de MongoDB como servicio dentro del workflow para replicar el entorno de ejecución real.
+  - Verificación de la correcta integración entre la API y la base de datos.
 
-Este enfoque asegura que el despliegue se realice únicamente tras haber superado las fases previas de pruebas y construcción.
+2. Pruebas del Frontend
+  - Instalación de dependencias mediante npm ci.
+  - Ejecución de tests y análisis estático del código.
+  - Generación de informes de cobertura.
 
-## Instalación y Autenticación
+3. Análisis estático y calidad del código
+  - Uso de herramientas de linting y formateo.
+  - Generación de métricas de cobertura para evaluar la calidad del código.
 
-### 1. Acceso al Código del Repositorio
-
-El despliegue no requiere acceder directamente al código fuente durante esta fase, ya que Render reconstruye los servicios a partir del repositorio configurado mediante Blueprints. Por tanto, el flujo de trabajo se limita a lanzar el evento de despliegue.
-
-### 2. Autenticación con Render
-
-* Se utilizan **Deploy Hooks** proporcionados por Render para cada servicio (`backend` y `frontend`).
-* Cada Deploy Hook consiste en una URL única que, al recibir una petición HTTP `POST`, inicia automáticamente un nuevo despliegue del servicio asociado.
-* Las URLs de los Deploy Hooks se almacenan como GitHub Secrets:
-  * `RENDER_BACKEND_DEPLOY_HOOK`
-  * `RENDER_FRONTEND_DEPLOY_HOOK`
-
-Este mecanismo elimina la necesidad de utilizar claves de API de Render en el pipeline, mejorando la seguridad y reduciendo la complejidad de la configuración.
+## Integración Continua con Github actions
+Render está conectado al repositorio GitHub y utiliza Render Blueprints, definidos en el archivo render.yaml, para desplegar automáticamente la aplicación. Cada vez que se detecta un cambio en la rama configurada:
+  1. Render clona el repositorio.
+  2. Interpreta el archivo render.yaml.
+  3. Reconstruye los servicios definidos (backend y frontend).
+  4. Despliega la nueva versión de la aplicación.
 
 ## Servicios Desplegados
 
-El flujo de trabajo automatiza el despliegue de los siguientes servicios definidos en Render:
+El despliegue automático gestionado por Render incluye los siguientes servicios:
 
-### 1. Backend (API)
+1. Backend (API)
+  - Servicio: hamari-backend
+  - Tipp: Web Service (Docker)
+  - Proceso de despliegue:
+    - Construcción de la imagen Docker a partir del Dockerfile.
+    - Arranque del servicio mediante Gunicorn.
+    - Exposición del endpoint /health para verificación del estado del servicio.
 
-* **Servicio:** `hamari-backend`
-* **Tipo:** Web Service (Docker)
-* **Acción de despliegue:**
-  Se lanza una petición `POST` al Deploy Hook correspondiente, provocando que Render:
-  * clone el repositorio,
-  * construya la imagen Docker del backend,
-  * y despliegue la nueva versión del servicio.
+2. Frontend (Web)
+  - Servicio: hamari-frontend
+  - Tipo: Static Site
+  - Proceso de despliegue:
+    - Ejecución del proceso de construcción (npm ci && npm run build).
+    - Publicación del contenido estático generado mediante CDN.
 
-### 2. Frontend (Web)
-
-* **Servicio:** `hamari-frontend`
-* **Tipo:** Static Site
-* **Acción de despliegue:**
-  Mediante su Deploy Hook, Render ejecuta automáticamente el proceso de construcción del frontend (`npm ci && npm run build`) y publica el contenido estático generado.
-
-La separación entre backend y frontend permite una gestión modular del despliegue y facilita el mantenimiento de cada componente de forma independiente.
-
-## Ventajas de la Configuración
-
-* **Automatización completa del despliegue:**
-  El proceso se ejecuta sin intervención manual una vez superadas las fases de validación.
-* **Despliegue controlado:**
-  Solo se despliegan versiones que han pasado correctamente los tests y la construcción de imágenes.
-* **Arquitectura modular:**
-  Backend y frontend se despliegan como servicios independientes.
-* **Seguridad:**
-  Las URLs sensibles de despliegue se almacenan como secretos de GitHub, evitando su exposición en el repositorio.
-* **Trazabilidad:**
-  Cada despliegue queda registrado en GitHub Actions y en el panel de Render.
-
-
-## 5. Ejemplo del Flujo de Trabajo
-
-A continuación se muestra el flujo de trabajo completo utilizado para automatizar el despliegue de la aplicación Hamari en Render:
-
-```
-name: Deploy en Render
-
-on:
-  workflow_run:
-    workflows: ["Docker Images"]
-    types: [completed]
-    branches: ["Test"]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
-    steps:
-      - name: Trigger backend deploy
-        run: curl -fsS -X POST "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}"
-
-      - name: Trigger frontend deploy
-        run: curl -fsS -X POST "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}"
-```
-
-Este flujo garantiza que el despliegue solo se ejecute cuando todas las fases previas han finalizado correctamente.
 
 ## Conclusión
-
-La integración de GitHub Actions con Render mediante Deploy Hooks proporciona un mecanismo de **despliegue automático, seguro y reproducible**, alineado con las buenas prácticas de CI/CD. Esta solución permite desacoplar la validación del código del proceso de despliegue, facilitando el mantenimiento del sistema y reduciendo el riesgo de errores en producción.
+La combinación de GitHub Actions para la Integración Continua y Render Blueprints para el Despliegue Continuo proporciona un flujo de trabajo automatizado, coherente y alineado con las buenas prácticas modernas de CI/CD. Esta solución garantiza que la aplicación Hamari se despliegue de forma automática, segura y reproducible, manteniendo una arquitectura sencilla y fácil de mantener.
 
 ## Documentación adicional
 - [Hito 5](../hito5.md)
