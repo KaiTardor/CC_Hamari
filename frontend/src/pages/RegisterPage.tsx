@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Link , useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { api } from "../api";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -17,11 +17,13 @@ export default function RegisterPage() {
     sex: "",
     birth_date: "",
   });
-  
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -29,7 +31,6 @@ export default function RegisterPage() {
     e.preventDefault();
     setError("");
 
-    // Validaciones del frontend
     if (formData.password !== formData.confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
@@ -43,18 +44,18 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-  const { username, password, dni, name, surname, email, phone, sex, birth_date } = formData;
-  const dataToSend = { username, password, dni, name, surname, email, phone, sex, birth_date };
+      const { username, password, dni, name, surname, email, phone, sex, birth_date } =
+        formData;
+
+      const dataToSend = { username, password, dni, name, surname, email, phone, sex, birth_date };
       const response = await api.post("/auth/register", dataToSend);
-      
-      // El backend devuelve token y user, así que auto-logeamos
+
       const { token } = response.data;
       localStorage.setItem("token", token);
       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      
-      // Redirigir al home
+
       navigate("/");
-      window.location.reload(); // Para actualizar el AuthContext
+      window.location.reload();
     } catch (err: unknown) {
       type AxiosErr = { response?: { data?: { error?: string } }; message?: string };
       let message = "Error al registrarse. Inténtalo de nuevo.";
@@ -70,6 +71,35 @@ export default function RegisterPage() {
     }
   };
 
+  // --- estilos reutilizables (anti-solape) ---
+  const fieldLabelStyle: React.CSSProperties = {
+    display: "block",
+    marginBottom: 6,
+    color: "var(--color-text-light)",
+    fontSize: "0.9rem",
+  };
+
+  const fieldControlStyle: React.CSSProperties = {
+    width: "100%",
+    maxWidth: "100%",
+    minWidth: 0,
+    boxSizing: "border-box",
+    padding: "10px 12px",
+    borderRadius: 8,
+    border: "1px solid rgba(255, 45, 117, 0.3)",
+    background: "var(--color-bg-card)",
+    color: "var(--color-text-light)",
+    fontSize: "1rem",
+  };
+
+  const grid2Style: React.CSSProperties = {
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+    gap: 16,
+  };
+
+  const fieldWrapStyle: React.CSSProperties = { minWidth: 0 };
+
   return (
     <div className="container" style={{ padding: "32px 0", maxWidth: 600 }}>
       <h1
@@ -84,6 +114,7 @@ export default function RegisterPage() {
       >
         Crear Cuenta
       </h1>
+
       <p style={{ textAlign: "center", color: "var(--color-text-muted)", marginBottom: 24 }}>
         Regístrate como cliente para acceder a todas las funcionalidades
       </p>
@@ -104,33 +135,22 @@ export default function RegisterPage() {
       )}
 
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-              Usuario *
-            </label>
+        {/* Usuario / DNI */}
+        <div style={grid2Style}>
+          <div style={fieldWrapStyle}>
+            <label style={fieldLabelStyle}>Usuario *</label>
             <input
               type="text"
               name="username"
               value={formData.username}
               onChange={handleChange}
               required
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid rgba(255, 45, 117, 0.3)",
-                background: "var(--color-bg-card)",
-                color: "var(--color-text-light)",
-                fontSize: "1rem",
-              }}
+              style={fieldControlStyle}
             />
           </div>
 
-          <div>
-            <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-              DNI *
-            </label>
+          <div style={fieldWrapStyle}>
+            <label style={fieldLabelStyle}>DNI *</label>
             <input
               type="text"
               name="dni"
@@ -138,24 +158,15 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
               placeholder="12345678A"
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid rgba(255, 45, 117, 0.3)",
-                background: "var(--color-bg-card)",
-                color: "var(--color-text-light)",
-                fontSize: "1rem",
-              }}
+              style={fieldControlStyle}
             />
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-              Contraseña *
-            </label>
+        {/* Password / Confirm */}
+        <div style={grid2Style}>
+          <div style={fieldWrapStyle}>
+            <label style={fieldLabelStyle}>Contraseña *</label>
             <input
               type="password"
               name="password"
@@ -163,22 +174,12 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
               minLength={6}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid rgba(255, 45, 117, 0.3)",
-                background: "var(--color-bg-card)",
-                color: "var(--color-text-light)",
-                fontSize: "1rem",
-              }}
+              style={fieldControlStyle}
             />
           </div>
 
-          <div>
-            <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-              Confirmar Contraseña *
-            </label>
+          <div style={fieldWrapStyle}>
+            <label style={fieldLabelStyle}>Confirmar Contraseña *</label>
             <input
               type="password"
               name="confirmPassword"
@@ -186,92 +187,55 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
               minLength={6}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid rgba(255, 45, 117, 0.3)",
-                background: "var(--color-bg-card)",
-                color: "var(--color-text-light)",
-                fontSize: "1rem",
-              }}
+              style={fieldControlStyle}
             />
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-              Nombre *
-            </label>
+        {/* Nombre / Apellidos */}
+        <div style={grid2Style}>
+          <div style={fieldWrapStyle}>
+            <label style={fieldLabelStyle}>Nombre *</label>
             <input
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
               required
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid rgba(255, 45, 117, 0.3)",
-                background: "var(--color-bg-card)",
-                color: "var(--color-text-light)",
-                fontSize: "1rem",
-              }}
+              style={fieldControlStyle}
             />
           </div>
 
-          <div>
-            <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-              Apellidos *
-            </label>
+          <div style={fieldWrapStyle}>
+            <label style={fieldLabelStyle}>Apellidos *</label>
             <input
               type="text"
               name="surname"
               value={formData.surname}
               onChange={handleChange}
               required
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid rgba(255, 45, 117, 0.3)",
-                background: "var(--color-bg-card)",
-                color: "var(--color-text-light)",
-                fontSize: "1rem",
-              }}
+              style={fieldControlStyle}
             />
           </div>
         </div>
 
-        <div>
-          <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-            Email *
-          </label>
+        {/* Email */}
+        <div style={fieldWrapStyle}>
+          <label style={fieldLabelStyle}>Email *</label>
           <input
             type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
             required
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid rgba(255, 45, 117, 0.3)",
-              background: "var(--color-bg-card)",
-              color: "var(--color-text-light)",
-              fontSize: "1rem",
-            }}
+            style={fieldControlStyle}
           />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <div>
-            <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-              Teléfono *
-            </label>
+        {/* Teléfono / Sexo */}
+        <div style={grid2Style}>
+          <div style={fieldWrapStyle}>
+            <label style={fieldLabelStyle}>Teléfono *</label>
             <input
               type="tel"
               name="phone"
@@ -279,35 +243,17 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
               placeholder="+34600123456"
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid rgba(255, 45, 117, 0.3)",
-                background: "var(--color-bg-card)",
-                color: "var(--color-text-light)",
-                fontSize: "1rem",
-              }}
+              style={fieldControlStyle}
             />
           </div>
 
-          <div>
-            <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-              Sexo (opcional)
-            </label>
+          <div style={fieldWrapStyle}>
+            <label style={fieldLabelStyle}>Sexo (opcional)</label>
             <select
               name="sex"
               value={formData.sex}
               onChange={handleChange}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid rgba(255, 45, 117, 0.3)",
-                background: "var(--color-bg-card)",
-                color: "var(--color-text-light)",
-                fontSize: "1rem",
-              }}
+              style={fieldControlStyle}
             >
               <option value="">Seleccionar...</option>
               <option value="M">Hombre</option>
@@ -317,47 +263,43 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div>
-          <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-            Fecha de Nacimiento (opcional)
-          </label>
+        {/* Birth date */}
+        <div style={fieldWrapStyle}>
+          <label style={fieldLabelStyle}>Fecha de Nacimiento (opcional)</label>
           <input
             type="date"
             name="birth_date"
             value={formData.birth_date}
             onChange={handleChange}
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid rgba(255, 45, 117, 0.3)",
-              background: "var(--color-bg-card)",
-              color: "var(--color-text-light)",
-              fontSize: "1rem",
-            }}
+            style={fieldControlStyle}
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            marginTop: 8,
-            padding: "12px 24px",
-            fontSize: "1.1rem",
-            opacity: loading ? 0.6 : 1,
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
-        >
-          {loading ? "Registrando..." : "Crear Cuenta"}
-        </button>
+        {/* Botón + login */}
+        <div style={{ display: "grid", gap: 12, marginTop: 8 }}>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              padding: "12px 24px",
+              fontSize: "1.1rem",
+              opacity: loading ? 0.6 : 1,
+              cursor: loading ? "not-allowed" : "pointer",
+              width: "100%",
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            {loading ? "Registrando..." : "Crear Cuenta"}
+          </button>
 
-        <p style={{ textAlign: "center", color: "var(--color-text-muted)", marginTop: 8 }}>
-          ¿Ya tienes cuenta?{" "}
-          <Link to="/login" style={{ color: "var(--color-cyan)", textDecoration: "none" }}>
-          Inicia sesión aquí
-          </Link>
-        </p>
+          <p style={{ textAlign: "center", color: "var(--color-text-muted)", margin: 0 }}>
+            ¿Ya tienes cuenta?{" "}
+            <Link to="/login" style={{ color: "var(--color-cyan)", textDecoration: "none" }}>
+              Inicia sesión aquí
+            </Link>
+          </p>
+        </div>
       </form>
     </div>
   );
