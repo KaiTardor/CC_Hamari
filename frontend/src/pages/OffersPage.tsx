@@ -49,18 +49,18 @@ export default function OffersPage() {
         Ofertas Disponibles
       </h1>
 
-      {/* FILTROS (GRID) */}
+      {/* FILTROS */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(0, 1fr) minmax(220px, 260px) auto",
+          display: "flex",
           gap: 12,
           marginBottom: 24,
           alignItems: "end",
+          flexWrap: "wrap",
         }}
       >
         {/* Buscar */}
-        <div style={{ minWidth: 0 }}>
+        <div style={{ flex: "1 1 420px", minWidth: 0 }}>
           <label
             style={{
               display: "block",
@@ -77,7 +77,7 @@ export default function OffersPage() {
             placeholder="Buscar ofertas..."
             style={{
               width: "100%",
-              minWidth: 0,
+              boxSizing: "border-box",
               padding: "10px 12px",
               borderRadius: 8,
               border: "1px solid rgba(255, 45, 117, 0.3)",
@@ -89,7 +89,7 @@ export default function OffersPage() {
         </div>
 
         {/* Fecha */}
-        <div style={{ minWidth: 0 }}>
+        <div style={{ flex: "0 1 260px", minWidth: 220 }}>
           <label
             style={{
               display: "block",
@@ -106,13 +106,15 @@ export default function OffersPage() {
             onChange={(e) => setDateISO(e.target.value)}
             style={{
               width: "100%",
-              minWidth: 0,
+              boxSizing: "border-box",
               padding: "10px 12px",
+              paddingRight: 44, // 👈 espacio para el icono del calendario
               borderRadius: 8,
               border: "1px solid rgba(255, 45, 117, 0.3)",
               background: "var(--color-bg-card)",
               color: "var(--color-text-light)",
               fontSize: "1rem",
+              colorScheme: "dark",
             }}
           />
         </div>
@@ -125,7 +127,7 @@ export default function OffersPage() {
             opacity: loading ? 0.6 : 1,
             whiteSpace: "nowrap",
             height: 42,
-            justifySelf: "end",
+            flex: "0 0 auto",
           }}
         >
           {loading ? "Filtrando..." : "Filtrar"}
@@ -137,11 +139,13 @@ export default function OffersPage() {
           Cargando…
         </div>
       )}
+
       {err && (
         <div style={{ color: "var(--color-magenta)", textAlign: "center" }}>
           {err}
         </div>
       )}
+
       {!loading && offers.length === 0 && !err && (
         <div
           style={{

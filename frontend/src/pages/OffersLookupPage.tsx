@@ -16,6 +16,7 @@ export default function OffersLookupPage() {
   const searchOffers = useCallback(
     async (dniToUse?: string) => {
       const searchDni = dniToUse ?? providerDni;
+
       if (!searchDni) {
         setMsg("Por favor, ingresa un DNI de proveedor");
         return;
@@ -29,6 +30,7 @@ export default function OffersLookupPage() {
         const { data } = await api.get("/offers/lookup", {
           params: { provider_dni: searchDni },
         });
+
         setResult(data);
 
         if (data.length === 0) {
@@ -79,15 +81,15 @@ export default function OffersLookupPage() {
       {!isProvider && (
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(0, 1fr) auto",
+            display: "flex",
             gap: 12,
             marginBottom: 24,
             maxWidth: 600,
             alignItems: "end",
+            flexWrap: "wrap",
           }}
         >
-          <div style={{ minWidth: 0 }}>
+          <div style={{ flex: "1 1 420px", minWidth: 0 }}>
             <label
               style={{
                 display: "block",
@@ -98,6 +100,7 @@ export default function OffersLookupPage() {
             >
               DNI del Proveedor:
             </label>
+
             <input
               value={providerDni}
               onChange={(e) => setProviderDni(e.target.value)}
@@ -105,6 +108,7 @@ export default function OffersLookupPage() {
               style={{
                 width: "100%",
                 minWidth: 0,
+                boxSizing: "border-box",
                 padding: "10px 12px",
                 borderRadius: 8,
                 border: "1px solid rgba(255, 45, 117, 0.3)",
@@ -119,9 +123,11 @@ export default function OffersLookupPage() {
             onClick={() => searchOffers()}
             disabled={busy}
             style={{
+              // 👇 clave: anula cualquier position:absolute global
+              position: "static",
               whiteSpace: "nowrap",
               height: 42,
-              justifySelf: "end",
+              flex: "0 0 auto",
               opacity: busy ? 0.6 : 1,
             }}
           >
@@ -171,7 +177,9 @@ export default function OffersLookupPage() {
             marginTop: 40,
           }}
         >
-          {isProvider ? "Aún no tienes ofertas publicadas" : "No se encontraron ofertas"}
+          {isProvider
+            ? "Aún no tienes ofertas publicadas"
+            : "No se encontraron ofertas"}
         </div>
       )}
 
@@ -240,23 +248,28 @@ export default function OffersLookupPage() {
                   <strong style={{ color: "var(--color-orange)" }}>Precio:</strong>{" "}
                   {o.price.toFixed(2)} €
                 </div>
+
                 <div style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
                   <strong style={{ color: "var(--color-orange)" }}>
                     Disponible:
                   </strong>{" "}
                   {o.available_from} → {o.available_to}
                 </div>
+
                 <div style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
                   <strong style={{ color: "var(--color-orange)" }}>
                     Capacidad/día:
                   </strong>{" "}
                   {o.daily_capacity}
                 </div>
+
                 <div style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}>
                   <strong style={{ color: "var(--color-orange)" }}>Estado:</strong>{" "}
                   <span
                     style={{
-                      color: o.is_active ? "var(--color-cyan)" : "var(--color-text-muted)",
+                      color: o.is_active
+                        ? "var(--color-cyan)"
+                        : "var(--color-text-muted)",
                       fontWeight: 600,
                     }}
                   >
