@@ -1,9 +1,10 @@
 # backend/routes/bookings.py
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, g, jsonify, request
 
 from backend import mongo
-from backend.utils.authz import current_user, require_roles
+from backend.utils.authz import require_roles
+from backend.utils.http import get_json_body
 
 from ..services.bookings_service import (
     create_booking as svc_create_booking,
@@ -24,7 +25,7 @@ bookings_bp = Blueprint("bookings", __name__)
 @bookings_bp.route("/", methods=["GET"])
 @require_roles("client", "staff")
 def list_bookings():
-    user = current_user()
+    user = g.user
     client_dni = request.args.get("dni")
     offer_id = request.args.get("offer_id")
     try:
@@ -39,9 +40,9 @@ def list_bookings():
 @bookings_bp.route("/", methods=["POST"])
 @require_roles("client", "staff")
 def create_booking():
-    user = current_user()
-    data = request.get_json(force=True) or {}
+    user = g.user
     try:
+        data = get_json_body()
         res = svc_create_booking(mongo.db, user, data)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -69,10 +70,10 @@ def lookup_booking():
 @bookings_bp.route("/<booking_id>/status", methods=["PUT", "PATCH"])
 @require_roles("client", "staff")
 def update_booking_status(booking_id):
-    user = current_user()
-    data = request.get_json(force=True) or {}
-    new_status = data.get("status")
+    user = g.user
     try:
+        data = get_json_body()
+        new_status = data.get("status")
         svc_update_booking_status(mongo.db, booking_id, new_status, user)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

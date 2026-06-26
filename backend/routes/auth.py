@@ -1,6 +1,7 @@
 from flask import Blueprint, current_app, jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
 from ..utils.authz import require_roles
+from ..utils.http import get_json_body
 from ..utils.jwt import *
 from ..utils.utils import is_valid_email, is_valid_phone, normalize_dni
 
@@ -23,10 +24,10 @@ def login():
     db = current_app.mongo.db
     user = db.users.find_one({"username": username})
     if not user:
-        return jsonify({"error": "Usuario no encontrado"}), 401
+        return jsonify({"error": "Credenciales inválidas"}), 401
 
     if not check_password_hash(user["password_hash"], password):
-        return jsonify({"error": "Contraseña incorrecta"}), 401
+        return jsonify({"error": "Credenciales inválidas"}), 401
 
     # Construir el payload mínimo
     token = create_jwt(
@@ -77,7 +78,10 @@ def register():
     Espera: username, password, dni, name, surname, email, phone
     Opcionalmente: sex, birth_date
     """
-    data = request.get_json(silent=True) or {}
+    try:
+        data = get_json_body()
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
     # Validar campos obligatorios
     required = ["username", "password", "dni", "name", "surname", "email", "phone"]
@@ -165,7 +169,10 @@ def create_user():
     # Aquí deberías verificar que el usuario actual es admin
     # Por ahora lo dejamos abierto para que el admin pueda crear usuarios
 
-    data = request.get_json(silent=True) or {}
+    try:
+        data = get_json_body()
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
     required = ["username", "password", "role"]
     missing = [f for f in required if not data.get(f)]

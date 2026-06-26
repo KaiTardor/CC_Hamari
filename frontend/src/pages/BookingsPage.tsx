@@ -1,12 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../auth/AuthContext";
-import {
-  fetchBookings,
-  cancelBooking,
-  fetchOffers,
-  type Booking,
-  type Offer,
-} from "../api";
+import { fetchBookings, cancelBooking, fetchOffers, getApiErrorMessage, type Booking, type Offer } from "../api";
 
 export default function BookingsPage() {
   const { user } = useAuth();
@@ -15,273 +9,130 @@ export default function BookingsPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
-
   const isClient = user?.role === "client";
 
-  const loadBookings = useCallback(
-    async (dniToUse?: string) => {
-      const searchDni = dniToUse ?? dni;
-      if (!searchDni) {
-        setMsg("Por favor, ingresa un DNI");
-        return;
-      }
-
-      setLoading(true);
-      setMsg(null);
-
-      try {
-        // 1) Traer reservas
-        const bookings = await fetchBookings(searchDni);
-        setItems(bookings);
-
-        // 2) Traer ofertas (para mapear offer_id -> title/price)
-        const offers = await fetchOffers();
-        const map: Record<string, Offer> = {};
-        for (const o of offers) map[o._id] = o;
-        setOfferMap(map);
-
-        if (bookings.length === 0) {
-          setMsg("No se encontraron reservas para este DNI");
-        }
-      } catch (err: unknown) {
-        const e = err as { response?: { data?: { error?: string } }; message?: string };
-        setMsg(e.response?.data?.error ?? e.message ?? "Error consultando reservas");
-        setItems([]);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [dni]
-  );
+  const loadBookings = useCallback(async (searchDni: string) => {
+    if (!searchDni) { setMsg("Por favor, ingresa un DNI"); return; }
+    setLoading(true); setMsg(null);
+    try {
+      const [bookings, offers] = await Promise.all([fetchBookings(searchDni), fetchOffers()]);
+      setItems(bookings);
+      const map: Record<string, Offer> = {};
+      for (const o of offers) map[o._id] = o;
+      setOfferMap(map);
+      if (bookings.length === 0) setMsg("No se encontraron reservas para este DNI");
+    } catch (err: unknown) {
+      setMsg(getApiErrorMessage(err, "Error consultando reservas"));
+      setItems([]);
+    } finally { setLoading(false); }
+  }, []);
 
   useEffect(() => {
-    if (isClient && user?.ref_dni) {
-      setDni(user.ref_dni);
-      void loadBookings(user.ref_dni);
-    }
+    if (isClient && user?.ref_dni) { setDni(user.ref_dni); void loadBookings(user.ref_dni); }
   }, [isClient, user?.ref_dni, loadBookings]);
 
   async function cancel(id: string) {
     if (!confirm("¿Estás seguro de que quieres cancelar esta reserva?")) return;
-
-    try {
-      await cancelBooking(id);
-      await loadBookings();
-      setMsg("Reserva cancelada correctamente");
-    } catch (err: unknown) {
-      const e = err as { response?: { data?: { error?: string } }; message?: string };
-      setMsg(e.response?.data?.error ?? e.message ?? "No se pudo cancelar");
-    }
+    try { await cancelBooking(id); await loadBookings(dni); setMsg("✅ Reserva cancelada correctamente"); }
+    catch (err: unknown) { setMsg(getApiErrorMessage(err, "No se pudo cancelar")); }
   }
 
   return (
-    <div className="container" style={{ padding: "32px 0" }}>
-      <h1
-        style={{
-          background: "linear-gradient(135deg, #ff2d75, #ff9933, #00d4ff)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-          marginBottom: 8,
-        }}
-      >
+    <div className="container" style={{ padding: "40px 0" }}>
+      <h1 className="grad-text anim-fade-in-up" style={{
+        marginBottom: 8, fontSize: "clamp(1.6rem, 3vw, 2.2rem)", fontFamily: "var(--font-display)",
+      }}>
         Mis Reservas
       </h1>
-
-      <p style={{ color: "var(--color-text-muted)", marginBottom: 24 }}>
-        {isClient
-          ? "Aquí puedes ver y gestionar todas tus reservas"
-          : "Consulta las reservas por DNI"}
+      <p className="anim-fade-in-up delay-1" style={{ color: "var(--color-text-dim)", marginBottom: 32, fontSize: "0.95rem" }}>
+        {isClient ? "Aquí puedes ver y gestionar todas tus reservas" : "Consulta las reservas por DNI"}
       </p>
 
       {!isClient && (
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-            marginBottom: 24,
-            maxWidth: 600,
-            alignItems: "flex-end",
-          }}
-        >
-          <div style={{ flex: 1 }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: 6,
-                color: "var(--color-text-light)",
-                fontSize: "0.9rem",
-              }}
-            >
-              DNI:
-            </label>
-            <input
-              value={dni}
-              onChange={(e) => setDni(e.target.value)}
-              placeholder="12345678A"
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 8,
-                border: "1px solid rgba(255, 45, 117, 0.3)",
-                background: "var(--color-bg-card)",
-                color: "var(--color-text-light)",
-                fontSize: "1rem",
-              }}
-            />
+        <div className="card anim-fade-in-up delay-2" style={{
+          display: "flex", gap: 12, marginBottom: 28, maxWidth: 500, alignItems: "end", padding: 20, flexWrap: "wrap",
+        }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <label style={{ display: "block", marginBottom: 8, color: "var(--color-text-muted)", fontSize: "0.85rem", fontWeight: 500 }}>DNI:</label>
+            <input value={dni} onChange={(e) => setDni(e.target.value)} placeholder="12345678A" />
           </div>
-
-          <button onClick={() => loadBookings()} disabled={loading}>
+          <button className="btn-primary" onClick={() => loadBookings(dni)} disabled={loading} style={{ height: 44, padding: "0 24px" }}>
             {loading ? "Buscando..." : "Buscar"}
           </button>
         </div>
       )}
 
       {msg && (
-        <div
-          style={{
-            background: msg.includes("✅")
-              ? "rgba(0, 212, 255, 0.1)"
-              : "rgba(255, 45, 117, 0.1)",
-            border: `1px solid ${
-              msg.includes("✅") ? "var(--color-cyan)" : "var(--color-magenta)"
-            }`,
-            borderRadius: 8,
-            padding: 12,
-            marginBottom: 20,
-            color: msg.includes("✅") ? "var(--color-cyan)" : "var(--color-magenta)",
-          }}
-        >
+        <div style={{
+          background: msg.includes("✅") ? "rgba(0, 230, 138, 0.06)" : "rgba(255, 45, 117, 0.06)",
+          border: `1px solid ${msg.includes("✅") ? "rgba(0,230,138,0.2)" : "rgba(255,45,117,0.2)"}`,
+          borderRadius: "var(--radius-sm)", padding: 14, marginBottom: 20,
+          color: msg.includes("✅") ? "var(--color-emerald)" : "var(--color-magenta)", fontSize: "0.9rem",
+        }}>
           {msg}
         </div>
       )}
 
       {loading && (
-        <div style={{ textAlign: "center", color: "var(--color-text-muted)", marginTop: 40 }}>
-          Cargando reservas...
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+          {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 240, borderRadius: "var(--radius-lg)" }} />)}
         </div>
       )}
 
       {!loading && items.length === 0 && !msg && (
-        <div style={{ textAlign: "center", color: "var(--color-text-muted)", marginTop: 40 }}>
+        <div style={{ textAlign: "center", color: "var(--color-text-dim)", marginTop: 60, fontSize: "1.05rem" }}>
           {isClient ? "Aún no tienes reservas" : "Realiza una búsqueda para ver las reservas"}
         </div>
       )}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-          gap: 20,
-        }}
-      >
-        {items.map((b) => {
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+        {items.map((b, i) => {
           const offer = offerMap[b.offer_id];
-          const offerTitle = offer?.title ?? "Oferta";
-          const offerPrice =
-            offer?.price != null ? `${offer.price.toFixed(2)} €` : "";
-          const offerWindow =
-            offer?.available_from && offer?.available_to
-              ? `${offer.available_from} → ${offer.available_to}`
-              : null;
-
+          const isCancelled = b.status === "CANCELLED";
           return (
             <div
               key={b._id}
+              className={`card anim-fade-in-up`}
               style={{
-                background: "var(--color-bg-card)",
-                borderRadius: 12,
-                padding: 20,
-                border: `2px solid ${
-                  b.status === "CANCELLED"
-                    ? "rgba(128, 128, 128, 0.3)"
-                    : "rgba(0, 212, 255, 0.3)"
-                }`,
-                transition: "all 0.3s",
+                padding: 22,
                 display: "flex",
                 flexDirection: "column",
-                opacity: b.status === "CANCELLED" ? 0.6 : 1,
-              }}
-              onMouseEnter={(e) => {
-                if (b.status !== "CANCELLED") {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow = "0 8px 20px rgba(0, 212, 255, 0.3)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
+                opacity: isCancelled ? 0.55 : 1,
+                borderColor: isCancelled ? "rgba(157,150,173,0.15)" : "rgba(0,212,255,0.15)",
+                animationDelay: `${i * 0.05}s`,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 14 }}>
                 <div>
-                  <div style={{ color: "var(--color-text-muted)", fontSize: "0.8rem" }}>Fecha</div>
-                  <div style={{ color: "var(--color-cyan)", fontSize: "1.2rem", fontWeight: 700 }}>
+                  <div style={{ color: "var(--color-text-dim)", fontSize: "0.78rem", marginBottom: 2 }}>Fecha</div>
+                  <div style={{ color: "var(--color-cyan)", fontSize: "1.15rem", fontWeight: 700, fontFamily: "var(--font-display)" }}>
                     {b.date}
                   </div>
                 </div>
-              </div>
-
-              <div style={{ marginBottom: 12 }}>
-                <span style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>Estado: </span>
-                <span
-                  style={{
-                    display: "inline-block",
-                    padding: "4px 12px",
-                    borderRadius: 6,
-                    fontSize: "0.85rem",
-                    fontWeight: 600,
-                    background:
-                      b.status === "CANCELLED"
-                        ? "rgba(128, 128, 128, 0.2)"
-                        : "rgba(0, 212, 255, 0.2)",
-                    color:
-                      b.status === "CANCELLED"
-                        ? "var(--color-text-muted)"
-                        : "var(--color-cyan)",
-                  }}
-                >
-                  {b.status === "CANCELLED" ? "CANCELADA" : b.status}
+                <span className={`badge ${isCancelled ? "badge-muted" : "badge-emerald"}`}>
+                  {isCancelled ? "CANCELADA" : b.status}
                 </span>
               </div>
 
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
-                  Oferta
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ color: "var(--color-text-dim)", fontSize: "0.78rem", marginBottom: 2 }}>Oferta</div>
+                <div style={{ color: "var(--color-text-light)", fontWeight: 600, fontSize: "1rem" }}>
+                  {offer?.title ?? "Oferta"}
                 </div>
-                <div style={{ color: "var(--color-text-light)", fontSize: "1rem", fontWeight: 700 }}>
-                  {offerTitle}
-                </div>
-                {(offerPrice || offerWindow) && (
-                  <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem", marginTop: 6 }}>
-                    {offerPrice}
-                    {offerPrice && offerWindow ? " · " : ""}
-                    {offerWindow ?? ""}
+                {(offer?.price != null || (offer?.available_from && offer?.available_to)) && (
+                  <div style={{ color: "var(--color-text-dim)", fontSize: "0.82rem", marginTop: 6 }}>
+                    {offer?.price != null ? `${offer.price.toFixed(2)} €` : ""}
+                    {offer?.price != null && offer?.available_from ? " · " : ""}
+                    {offer?.available_from && offer?.available_to ? `${offer.available_from} → ${offer.available_to}` : ""}
                   </div>
                 )}
               </div>
 
-              {b.status !== "CANCELLED" && (
+              {!isCancelled && (
                 <button
+                  className="btn-danger"
                   onClick={() => cancel(b._id)}
-                  style={{
-                    marginTop: "auto",
-                    padding: "10px 16px",
-                    borderRadius: 8,
-                    border: "1px solid rgba(255, 45, 117, 0.4)",
-                    background: "rgba(255, 45, 117, 0.1)",
-                    color: "var(--color-magenta)",
-                    cursor: "pointer",
-                    fontSize: "0.95rem",
-                    fontWeight: 600,
-                    transition: "all 0.3s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(255, 45, 117, 0.2)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "rgba(255, 45, 117, 0.1)";
-                  }}
+                  style={{ marginTop: "auto", padding: "10px 16px", fontSize: "0.88rem" }}
                 >
                   Cancelar Reserva
                 </button>

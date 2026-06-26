@@ -8,10 +8,13 @@ def index(mongo):
     db.clients.create_index("dni", unique=True)
     db.providers.create_index("dni", unique=True)
     db.staff.create_index("dni", unique=True)
+    db.users.create_index("username", unique=True)
 
     # filtros
     db.offers.create_index([("category", 1), ("price", 1)])
     db.offers.create_index("is_active")
+    db.offers.create_index("provider_dni")
+    db.offers.create_index([("is_active", 1), ("price", 1)])
 
     # reservas
     db.bookings.create_index([("offer_id", 1), ("client_dni", 1)])

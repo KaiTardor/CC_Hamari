@@ -1,5 +1,5 @@
 from bson import ObjectId
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, g, jsonify, request
 
 from backend import mongo
 
@@ -24,7 +24,8 @@ from ..services.offers_service import (
 from ..services.offers_service import (
     update_offer as svc_update_offer,
 )
-from ..utils.authz import current_user, require_roles
+from ..utils.authz import require_roles
+from ..utils.http import get_json_body
 from ..utils.utils import to_float_or_none
 
 offers_bp = Blueprint("offers", __name__)
@@ -86,9 +87,9 @@ def offer_detail(offer_id):
 @offers_bp.route("/", methods=["POST"])
 @require_roles("provider")
 def create_offer():
-    data = request.get_json(force=True)
-    user = current_user()
     try:
+        data = get_json_body()
+        user = g.user
         offer_id = svc_create_offer(mongo.db, data, user=user)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -100,9 +101,9 @@ def create_offer():
 @offers_bp.route("/<offer_id>", methods=["PUT", "PATCH"])
 @require_roles("provider")
 def update_offer(offer_id):
-    data = request.get_json(force=True)
-    user = current_user()
     try:
+        data = get_json_body()
+        user = g.user
         ok = svc_update_offer(mongo.db, offer_id, data, user=user)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -116,7 +117,7 @@ def update_offer(offer_id):
 @offers_bp.route("/<offer_id>", methods=["DELETE"])
 @require_roles("provider")
 def delete_offer(offer_id):
-    user = current_user()
+    user = g.user
     try:
         ok = svc_delete_offer(mongo.db, offer_id, user=user)
     except ValueError as e:

@@ -69,7 +69,14 @@ def create_booking(db, user, data):
         "date": date_str,
         "status": "PENDING",
     }
-    ins = db.bookings.insert_one(res_doc)
+    try:
+        ins = db.bookings.insert_one(res_doc)
+    except Exception:
+        db.offer_inventory.update_one(
+            {"offer_id": _offer_id, "date": date_str, "booked": {"$gt": 0}},
+            {"$inc": {"booked": -1}},
+        )
+        raise
     res_doc["_id"] = str(ins.inserted_id)
     res_doc["offer_id"] = (
         str(res_doc["offer_id"]) if res_doc.get("offer_id") is not None else None
@@ -117,7 +124,8 @@ def update_booking_status(db, booking_id, new_status, user):
     prev_status = bk.get("status")
     if new_status == "CANCELLED" and prev_status != "CANCELLED":
         db.offer_inventory.update_one(
-            {"offer_id": bk["offer_id"], "date": bk["date"]}, {"$inc": {"booked": -1}}
+            {"offer_id": bk["offer_id"], "date": bk["date"], "booked": {"$gt": 0}},
+            {"$inc": {"booked": -1}},
         )
 
     res = db.bookings.update_one({"_id": _bid}, {"$set": {"status": new_status}})

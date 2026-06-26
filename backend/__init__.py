@@ -1,13 +1,25 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_pymongo import PyMongo
+import os
+from urllib.parse import urlsplit, urlunsplit
 
 from .config import Config
 from .logging import setup_logging
+from .utils.errors import ApiError
 from .utils.index import *
 
 # Inicializamos PyMongo global
 mongo = PyMongo()
+
+
+def _mongo_uri_with_database(uri: str) -> str:
+    parsed = urlsplit(uri)
+    path = parsed.path if parsed.path and parsed.path != "/" else "/HamariDB"
+    query = parsed.query
+    if parsed.username and "authSource=" not in query:
+        query = f"{query}&authSource=admin" if query else "authSource=admin"
+    return urlunsplit((parsed.scheme, parsed.netloc, path, query, parsed.fragment))
 
 
 def create_app():
@@ -16,38 +28,30 @@ def create_app():
     """
     app = Flask(__name__)
     app.config.from_object(Config)
+    app.config["MONGO_URI"] = _mongo_uri_with_database(
+        os.getenv("MONGO_URI", Config.MONGO_URI)
+    )
 
     # Inicializar logging (loguru)
-    setup_logging(app)
+    setup_logging(app, level=Config.LOG_LEVEL)
 
     # CORS para permitir peticiones desde el frontend en Render
     CORS(
         app,
-        resources={r"/api/*": {"origins": ["https://hamari-frontend.onrender.com"]}},
-        supports_credentials=False
+        resources={r"/api/*": {"origins": Config.CORS_ORIGINS}},
+        supports_credentials=False,
+        allow_headers=["Content-Type", "Authorization"],
+        methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     )
-
-    # Forzar cabeceras CORS en todas las respuestas (incluye OPTIONS)
-    @app.after_request
-    def add_cors_headers(response):
-        response.headers.add(
-            "Access-Control-Allow-Origin",
-            "https://hamari-frontend.onrender.com"
-        )
-        response.headers.add(
-            "Access-Control-Allow-Headers",
-            "Content-Type,Authorization"
-        )
-        response.headers.add(
-            "Access-Control-Allow-Methods",
-            "GET,POST,PUT,DELETE,OPTIONS"
-        )
-        return response
 
     # Inicializar MongoDB
     mongo.init_app(app)
     app.mongo = mongo
     index(mongo)
+
+    @app.errorhandler(ApiError)
+    def handle_api_error(error):
+        return jsonify({"error": error.message}), error.status_code
 
     # Importar y registrar Blueprints
     from .routes.auth import auth_bp

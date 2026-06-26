@@ -1,36 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
-import { api } from "../api";
+import { api, getApiErrorMessage } from "../api";
 
-type Client = {
-  dni: string;
-  name: string;
-  surname: string;
-  email: string;
-  phone: string;
-  sex?: string;
-  birth_date?: string;
-};
-
-type Provider = {
-  dni: string;
-  company_name: string;
-  contact_name?: string;
-  contact_surname?: string;
-  email?: string;
-  phone?: string;
-};
-
-type Staff = {
-  dni: string;
-  name: string;
-  surname: string;
-  email: string;
-  phone: string;
-  sex?: string;
-  birth_date?: string;
-};
-
-type Tab = "clients" | "providers" | "staff" | "users";
+type Client = { dni: string; name: string; surname: string; email: string; phone: string; sex?: string; birth_date?: string; };
+type Provider = { dni: string; company_name: string; contact_name?: string; contact_surname?: string; email?: string; phone?: string; };
+type Staff = { dni: string; name: string; surname: string; email: string; phone: string; sex?: string; birth_date?: string; };
+type Tab = "clients" | "providers" | "staff";
 
 export default function AdminUsersPage() {
   const [activeTab, setActiveTab] = useState<Tab>("clients");
@@ -39,180 +13,58 @@ export default function AdminUsersPage() {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Estados para formulario de creación
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<Record<string, unknown>>({});
 
   const loadData = useCallback(async () => {
-    setLoading(true);
-    setError("");
+    setLoading(true); setError("");
     try {
-      if (activeTab === "clients") {
-        const res = await api.get("/clients/");
-        setClients(res.data);
-      } else if (activeTab === "providers") {
-        const res = await api.get("/providers/");
-        setProviders(res.data);
-      } else if (activeTab === "staff") {
-        const res = await api.get("/staff/");
-        setStaff(res.data);
-      }
-    } catch (err: unknown) {
-      const e = err as { response?: { data?: { error?: string } }; message?: string };
-      setError(e.response?.data?.error ?? e.message ?? "Error al cargar datos");
-    } finally {
-      setLoading(false);
-    }
+      if (activeTab === "clients") { const res = await api.get("/clients/"); setClients(res.data); }
+      else if (activeTab === "providers") { const res = await api.get("/providers/"); setProviders(res.data); }
+      else if (activeTab === "staff") { const res = await api.get("/staff/"); setStaff(res.data); }
+    } catch (err: unknown) { setError(getApiErrorMessage(err, "Error al cargar datos")); }
+    finally { setLoading(false); }
   }, [activeTab]);
 
-  useEffect(() => {
-    void loadData();
-  }, [activeTab, loadData]);
+  useEffect(() => { void loadData(); }, [activeTab, loadData]);
 
   const handleDelete = async (dni: string) => {
-    if (!confirm(`¿Seguro que deseas eliminar este ${activeTab === "clients" ? "cliente" : activeTab === "providers" ? "proveedor" : "empleado"}?`)) return;
-    
+    const label = activeTab === "clients" ? "cliente" : activeTab === "providers" ? "proveedor" : "empleado";
+    if (!confirm(`¿Seguro que deseas eliminar este ${label}?`)) return;
     try {
       const endpoint = activeTab === "clients" ? "/clients/" : activeTab === "providers" ? "/providers/" : "/staff/";
       await api.delete(`${endpoint}${dni}`);
-      loadData();
-    } catch (err: unknown) {
-      const e = err as { response?: { data?: { error?: string } }; message?: string };
-      alert(e.response?.data?.error ?? e.message ?? "Error al eliminar");
-    }
+      await loadData();
+    } catch (err: unknown) { alert(getApiErrorMessage(err, "Error al eliminar")); }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const endpoint =
-        activeTab === "clients"
-          ? "/clients/"
-          : activeTab === "providers"
-          ? "/providers/"
-          : "/staff/";
-
+      const endpoint = activeTab === "clients" ? "/clients/" : activeTab === "providers" ? "/providers/" : "/staff/";
       await api.post(endpoint, formData);
-
-      // Crear usuario de login en users para provider, staff y client
-      if (activeTab === "providers" || activeTab === "staff" || activeTab === "clients") {
-        const username = (formData.username as string) || (formData.dni as string);
-        const password = (formData.password as string) || "123456"; // temporal (mejor pedirla)
-        const role =
-          activeTab === "providers" ? "provider" : activeTab === "staff" ? "staff" : "client";
-
-        try {
-          await api.post("/auth/users/create", {
-            username,
-            password,
-            role,
-            ref_dni: formData.dni as string,
-          });
-        } catch (userErr) {
-          console.warn("Usuario podría ya existir:", userErr);
-        }
-      }
-
-      setShowForm(false);
-      setFormData({});
-      loadData();
-    } catch (err: unknown) {
-      const e = err as { response?: { data?: { error?: string } }; message?: string };
-      alert(e.response?.data?.error ?? e.message ?? "Error al crear");
-    }
+      const username = (formData.username as string) || (formData.dni as string);
+      const password = (formData.password as string) || "123456";
+      const role = activeTab === "providers" ? "provider" : activeTab === "staff" ? "staff" : "client";
+      try { await api.post("/auth/users/create", { username, password, role, ref_dni: formData.dni as string }); }
+      catch (userErr) { console.warn("Usuario podría ya existir:", userErr); }
+      setShowForm(false); setFormData({}); await loadData();
+    } catch (err: unknown) { alert(getApiErrorMessage(err, "Error al crear")); }
   };
-
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const renderForm = () => {
-    if (!showForm) return null;
-
-    return (
-      <div style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.7)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 1000,
-      }} onClick={() => setShowForm(false)}>
-        <div style={{
-          background: "var(--color-bg-card)",
-          borderRadius: 12,
-          padding: 24,
-          width: "min(92vw, 600px)",
-          maxHeight: "90vh",
-          overflowY: "auto",
-          border: "2px solid var(--color-magenta)",
-        }} onClick={(e) => e.stopPropagation()}>
-          <h2 style={{ color: "var(--color-cyan)", marginBottom: 16 }}>
-            Crear {activeTab === "clients" ? "Cliente" : activeTab === "providers" ? "Proveedor" : "Personal"}
-          </h2>
-
-          <form onSubmit={handleCreate} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {/* Campos comunes */}
-            <input
-              type="text"
-              name="dni"
-              placeholder="DNI *"
-              required
-              onChange={handleFormChange}
-              style={inputStyle}
-            />
-
-            {activeTab === "providers" ? (
-              <>
-                <input type="text" name="company_name" placeholder="Nombre de empresa *" required onChange={handleFormChange} style={inputStyle} />
-                <input type="text" name="contact_name" placeholder="Nombre de contacto" onChange={handleFormChange} style={inputStyle} />
-                <input type="text" name="contact_surname" placeholder="Apellidos de contacto" onChange={handleFormChange} style={inputStyle} />
-                <input type="email" name="email" placeholder="Email" onChange={handleFormChange} style={inputStyle} />
-                <input type="tel" name="phone" placeholder="Teléfono" onChange={handleFormChange} style={inputStyle} />
-                <input type="text" name="username" placeholder="Usuario (opcional, se usará DNI por defecto)" onChange={handleFormChange} style={inputStyle} />
-                <input type="password" name="password" placeholder="Contraseña (por defecto: 123456)" onChange={handleFormChange} style={inputStyle} />
-              </>
-            ) : (
-              <>
-                <input type="text" name="name" placeholder="Nombre *" required onChange={handleFormChange} style={inputStyle} />
-                <input type="text" name="surname" placeholder="Apellidos *" required onChange={handleFormChange} style={inputStyle} />
-                <input type="email" name="email" placeholder="Email *" required onChange={handleFormChange} style={inputStyle} />
-                <input type="tel" name="phone" placeholder="Teléfono *" required onChange={handleFormChange} style={inputStyle} />
-                <select name="sex" onChange={handleFormChange} style={inputStyle}>
-                  <option value="">Sexo (opcional)</option>
-                  <option value="M">Masculino</option>
-                  <option value="F">Femenino</option>
-                  <option value="O">Otro</option>
-                </select>
-                <input type="date" name="birth_date" placeholder="Fecha de nacimiento" onChange={handleFormChange} style={inputStyle} />
-                
-                {activeTab === "staff" && (
-                  <>
-                    <input type="text" name="username" placeholder="Usuario (opcional, se usará DNI por defecto)" onChange={handleFormChange} style={inputStyle} />
-                    <input type="password" name="password" placeholder="Contraseña (por defecto: 123456)" onChange={handleFormChange} style={inputStyle} />
-                  </>
-                )}
-              </>
-            )}
-
-            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-              <button type="submit">Crear</button>
-              <button type="button" onClick={() => setShowForm(false)} style={{ background: "transparent", border: "1px solid var(--color-text-muted)" }}>
-                Cancelar
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    );
+  const labelStyle: React.CSSProperties = {
+    display: "block", marginBottom: 8, color: "var(--color-text-muted)", fontSize: "0.85rem", fontWeight: 500,
   };
 
-  const renderTable = () => {
-    if (loading) return <p style={{ textAlign: "center", color: "var(--color-text-muted)" }}>Cargando...</p>;
-    if (error) return <p style={{ textAlign: "center", color: "var(--color-magenta)" }}>{error}</p>;
+  const tabs = [
+    { key: "clients" as Tab, label: "Clientes" },
+    { key: "providers" as Tab, label: "Proveedores" },
+    { key: "staff" as Tab, label: "Personal" },
+  ];
 
   type UserItem = Client | Provider | Staff;
   let data: UserItem[] = [];
@@ -220,108 +72,36 @@ export default function AdminUsersPage() {
   else if (activeTab === "providers") data = providers;
   else if (activeTab === "staff") data = staff;
 
-    if (data.length === 0) {
-      return <p style={{ textAlign: "center", color: "var(--color-text-muted)", marginTop: 24 }}>No hay registros</p>;
-    }
-
-    return (
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 16 }}>
-          <thead>
-            <tr style={{ borderBottom: "2px solid var(--color-magenta)" }}>
-              <th style={thStyle}>DNI</th>
-              {activeTab === "providers" ? (
-                <>
-                  <th style={thStyle}>Empresa</th>
-                  <th style={thStyle}>Contacto</th>
-                  <th style={thStyle}>Email</th>
-                  <th style={thStyle}>Teléfono</th>
-                </>
-              ) : (
-                <>
-                  <th style={thStyle}>Nombre</th>
-                  <th style={thStyle}>Apellidos</th>
-                  <th style={thStyle}>Email</th>
-                  <th style={thStyle}>Teléfono</th>
-                </>
-              )}
-              <th style={thStyle}>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item) => (
-              <tr key={item.dni} style={{ borderBottom: "1px solid rgba(255, 45, 117, 0.2)" }}>
-                <td style={tdStyle}>{item.dni}</td>
-                {activeTab === "providers" ? (
-                  <>
-                    <td style={tdStyle}>{(item as Provider).company_name}</td>
-                    <td style={tdStyle}>{(item as Provider).contact_name} {(item as Provider).contact_surname}</td>
-                    <td style={tdStyle}>{(item as Provider).email || "-"}</td>
-                    <td style={tdStyle}>{(item as Provider).phone || "-"}</td>
-                  </>
-                ) : (
-                  <>
-                    <td style={tdStyle}>{(item as Client | Staff).name}</td>
-                    <td style={tdStyle}>{(item as Client | Staff).surname}</td>
-                    <td style={tdStyle}>{(item as Client | Staff).email}</td>
-                    <td style={tdStyle}>{(item as Client | Staff).phone}</td>
-                  </>
-                )}
-                <td style={tdStyle}>
-                  <button
-                    onClick={() => handleDelete(item.dni)}
-                    style={{
-                      background: "transparent",
-                      border: "1px solid var(--color-magenta)",
-                      color: "var(--color-magenta)",
-                      padding: "6px 12px",
-                      borderRadius: 6,
-                      cursor: "pointer",
-                      fontSize: "0.85rem",
-                    }}
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
   return (
-    <div className="container" style={{ padding: "32px 0" }}>
-      <h1 style={{
-        background: "linear-gradient(135deg, #ff2d75, #ff9933, #00d4ff)",
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
-        backgroundClip: "text",
-        marginBottom: 24,
+    <div className="container" style={{ padding: "40px 0" }}>
+      <h1 className="grad-text anim-fade-in-up" style={{
+        marginBottom: 8, fontSize: "clamp(1.6rem, 3vw, 2.2rem)", fontFamily: "var(--font-display)",
       }}>
         Gestión de Usuarios
       </h1>
+      <p className="anim-fade-in-up delay-1" style={{ color: "var(--color-text-dim)", marginBottom: 28, fontSize: "0.95rem" }}>
+        Administra clientes, proveedores y personal
+      </p>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 24, borderBottom: "2px solid rgba(255, 45, 117, 0.3)" }}>
-        {[
-          { key: "clients" as Tab, label: "Clientes" },
-          { key: "providers" as Tab, label: "Proveedores" },
-          { key: "staff" as Tab, label: "Personal" },
-        ].map((tab) => (
+      <div className="anim-fade-in-up delay-2" style={{
+        display: "flex", gap: 4, marginBottom: 24,
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+      }}>
+        {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             style={{
-              background: activeTab === tab.key ? "linear-gradient(135deg, var(--color-magenta), var(--color-orange))" : "transparent",
-              border: "none",
+              background: activeTab === tab.key ? "var(--grad-brand)" : "transparent",
               color: activeTab === tab.key ? "#fff" : "var(--color-text-muted)",
-              padding: "12px 24px",
+              padding: "10px 24px",
               cursor: "pointer",
-              fontSize: "1rem",
+              fontSize: "0.9rem",
               fontWeight: activeTab === tab.key ? 600 : 400,
-              borderRadius: "8px 8px 0 0",
+              borderRadius: "var(--radius-sm) var(--radius-sm) 0 0",
+              border: "none",
+              fontFamily: "var(--font-display)",
             }}
           >
             {tab.label}
@@ -329,43 +109,147 @@ export default function AdminUsersPage() {
         ))}
       </div>
 
-      {/* Botón crear */}
       <div style={{ marginBottom: 16 }}>
-        <button onClick={() => setShowForm(true)}>
+        <button className="btn-primary" onClick={() => setShowForm(true)} style={{ padding: "10px 20px" }}>
           + Crear {activeTab === "clients" ? "Cliente" : activeTab === "providers" ? "Proveedor" : "Personal"}
         </button>
       </div>
 
-      {/* Tabla */}
-      {renderTable()}
+      {/* Table */}
+      {loading ? (
+        <div style={{ display: "flex", gap: 12, flexDirection: "column" }}>
+          {[1,2,3].map(i => <div key={i} className="skeleton" style={{ height: 52, borderRadius: "var(--radius-sm)" }} />)}
+        </div>
+      ) : error ? (
+        <div style={{ color: "var(--color-magenta)", textAlign: "center", padding: 24, background: "rgba(255,45,117,0.05)", borderRadius: "var(--radius-sm)" }}>
+          {error}
+        </div>
+      ) : data.length === 0 ? (
+        <p style={{ textAlign: "center", color: "var(--color-text-dim)", marginTop: 32 }}>No hay registros</p>
+      ) : (
+        <div className="card anim-fade-in-up" style={{ overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                  <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--color-cyan)", fontSize: "0.82rem", fontWeight: 600, fontFamily: "var(--font-display)" }}>DNI</th>
+                  {activeTab === "providers" ? (
+                    <>
+                      <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--color-cyan)", fontSize: "0.82rem", fontWeight: 600 }}>Empresa</th>
+                      <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--color-cyan)", fontSize: "0.82rem", fontWeight: 600 }}>Contacto</th>
+                      <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--color-cyan)", fontSize: "0.82rem", fontWeight: 600 }}>Email</th>
+                      <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--color-cyan)", fontSize: "0.82rem", fontWeight: 600 }}>Teléfono</th>
+                    </>
+                  ) : (
+                    <>
+                      <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--color-cyan)", fontSize: "0.82rem", fontWeight: 600 }}>Nombre</th>
+                      <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--color-cyan)", fontSize: "0.82rem", fontWeight: 600 }}>Apellidos</th>
+                      <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--color-cyan)", fontSize: "0.82rem", fontWeight: 600 }}>Email</th>
+                      <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--color-cyan)", fontSize: "0.82rem", fontWeight: 600 }}>Teléfono</th>
+                    </>
+                  )}
+                  <th style={{ padding: "14px 16px", textAlign: "left", color: "var(--color-cyan)", fontSize: "0.82rem", fontWeight: 600 }}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((item) => (
+                  <tr key={item.dni} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                    <td style={{ padding: "12px 16px", color: "var(--color-text-light)", fontSize: "0.88rem" }}>{item.dni}</td>
+                    {activeTab === "providers" ? (
+                      <>
+                        <td style={{ padding: "12px 16px", color: "var(--color-text-light)", fontSize: "0.88rem" }}>{(item as Provider).company_name}</td>
+                        <td style={{ padding: "12px 16px", color: "var(--color-text-muted)", fontSize: "0.88rem" }}>{(item as Provider).contact_name} {(item as Provider).contact_surname}</td>
+                        <td style={{ padding: "12px 16px", color: "var(--color-text-muted)", fontSize: "0.88rem" }}>{(item as Provider).email || "-"}</td>
+                        <td style={{ padding: "12px 16px", color: "var(--color-text-muted)", fontSize: "0.88rem" }}>{(item as Provider).phone || "-"}</td>
+                      </>
+                    ) : (
+                      <>
+                        <td style={{ padding: "12px 16px", color: "var(--color-text-light)", fontSize: "0.88rem" }}>{(item as Client | Staff).name}</td>
+                        <td style={{ padding: "12px 16px", color: "var(--color-text-muted)", fontSize: "0.88rem" }}>{(item as Client | Staff).surname}</td>
+                        <td style={{ padding: "12px 16px", color: "var(--color-text-muted)", fontSize: "0.88rem" }}>{(item as Client | Staff).email}</td>
+                        <td style={{ padding: "12px 16px", color: "var(--color-text-muted)", fontSize: "0.88rem" }}>{(item as Client | Staff).phone}</td>
+                      </>
+                    )}
+                    <td style={{ padding: "12px 16px" }}>
+                      <button className="btn-danger" onClick={() => handleDelete(item.dni)} style={{ padding: "6px 14px", fontSize: "0.82rem" }}>
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-      {/* Formulario modal */}
-      {renderForm()}
+      {/* Modal Form */}
+      {showForm && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)",
+          backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16,
+          animation: "fadeIn 0.2s ease",
+        }} onClick={() => setShowForm(false)}>
+          <div className="card" style={{
+            padding: 28, width: "min(92vw, 560px)", maxHeight: "85vh", overflowY: "auto",
+            animation: "scaleIn 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+          }} onClick={(e) => e.stopPropagation()}>
+            <h2 className="grad-text" style={{
+              marginBottom: 20, fontSize: "1.3rem", fontFamily: "var(--font-display)",
+            }}>
+              Crear {activeTab === "clients" ? "Cliente" : activeTab === "providers" ? "Proveedor" : "Personal"}
+            </h2>
+
+            <form onSubmit={handleCreate} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={labelStyle}>DNI *</label>
+                <input type="text" name="dni" placeholder="12345678A" required onChange={handleFormChange} />
+              </div>
+
+              {activeTab === "providers" ? (
+                <>
+                  <div><label style={labelStyle}>Nombre de empresa *</label><input type="text" name="company_name" required onChange={handleFormChange} /></div>
+                  <div><label style={labelStyle}>Nombre de contacto</label><input type="text" name="contact_name" onChange={handleFormChange} /></div>
+                  <div><label style={labelStyle}>Apellidos de contacto</label><input type="text" name="contact_surname" onChange={handleFormChange} /></div>
+                  <div><label style={labelStyle}>Email</label><input type="email" name="email" onChange={handleFormChange} /></div>
+                  <div><label style={labelStyle}>Teléfono</label><input type="tel" name="phone" onChange={handleFormChange} /></div>
+                  <div><label style={labelStyle}>Usuario (opcional)</label><input type="text" name="username" onChange={handleFormChange} /></div>
+                  <div><label style={labelStyle}>Contraseña (por defecto: 123456)</label><input type="password" name="password" onChange={handleFormChange} /></div>
+                </>
+              ) : (
+                <>
+                  <div><label style={labelStyle}>Nombre *</label><input type="text" name="name" required onChange={handleFormChange} /></div>
+                  <div><label style={labelStyle}>Apellidos *</label><input type="text" name="surname" required onChange={handleFormChange} /></div>
+                  <div><label style={labelStyle}>Email *</label><input type="email" name="email" required onChange={handleFormChange} /></div>
+                  <div><label style={labelStyle}>Teléfono *</label><input type="tel" name="phone" required onChange={handleFormChange} /></div>
+                  <div>
+                    <label style={labelStyle}>Sexo (opcional)</label>
+                    <select name="sex" onChange={handleFormChange}>
+                      <option value="">Seleccionar...</option>
+                      <option value="M">Masculino</option>
+                      <option value="F">Femenino</option>
+                      <option value="O">Otro</option>
+                    </select>
+                  </div>
+                  <div><label style={labelStyle}>Fecha de nacimiento</label><input type="date" name="birth_date" onChange={handleFormChange} /></div>
+                  {activeTab === "staff" && (
+                    <>
+                      <div><label style={labelStyle}>Usuario (opcional)</label><input type="text" name="username" onChange={handleFormChange} /></div>
+                      <div><label style={labelStyle}>Contraseña (por defecto: 123456)</label><input type="password" name="password" onChange={handleFormChange} /></div>
+                    </>
+                  )}
+                </>
+              )}
+
+              <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+                <button type="submit" className="btn-primary" style={{ padding: "10px 24px" }}>Crear</button>
+                <button type="button" className="btn-ghost" onClick={() => setShowForm(false)} style={{ padding: "10px 24px" }}>Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-// Estilos reutilizables
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "10px 12px",
-  borderRadius: 8,
-  border: "1px solid rgba(255, 45, 117, 0.3)",
-  background: "var(--color-bg-dark)",
-  color: "var(--color-text-light)",
-  fontSize: "1rem",
-};
-
-const thStyle: React.CSSProperties = {
-  padding: "12px 8px",
-  textAlign: "left",
-  color: "var(--color-cyan)",
-  fontSize: "0.9rem",
-  fontWeight: 600,
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "12px 8px",
-  color: "var(--color-text-light)",
-  fontSize: "0.9rem",
-};

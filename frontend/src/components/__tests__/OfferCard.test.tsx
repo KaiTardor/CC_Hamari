@@ -39,6 +39,6 @@ describe('OfferCard', () => {
 
   it('displays daily capacity', () => {
     render(<OfferCard offer={mockOffer} />)
-    expect(screen.getByText(/Capacidad\s+diaria:\s*5/)).toBeInTheDocument();
+    expect(screen.getByText(/Cap:\s*5/)).toBeInTheDocument();
   })
 })

@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-do
 import { useState } from "react";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import ProtectedRoute from "./auth/ProtectedRoute";
+import "./App.css";
 
 import OffersPage from "./pages/OffersPage";
 import OfferDetailPage from "./pages/OfferDetailPage";
@@ -25,15 +26,15 @@ function Nav() {
 
   type Role = "admin" | "provider" | "staff" | "client";
   const can = (roles?: Role[]) => {
-    if (!roles || roles.length === 0) return true; // público
+    if (!roles || roles.length === 0) return true;
     if (!user) return false;
     return roles.includes(user.role);
   };
   const guardNav = (e: React.MouseEvent, to: string, roles?: Role[]) => {
     if (!can(roles)) {
       e.preventDefault();
-      setDenyMsg(user 
-        ? "Lo siento, no tienes permiso para acceder a esta función." 
+      setDenyMsg(user
+        ? "Lo siento, no tienes permiso para acceder a esta función."
         : "Necesitas iniciar sesión para acceder a esta función.");
       setDenyOpen(true);
       return;
@@ -48,60 +49,91 @@ function Nav() {
   };
 
   return (
-    <header style={{ borderBottom: "2px solid #ff2d75", background: "#3a3348", position: "sticky", top: 0, zIndex: 10, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
-      <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0" }}>
-        <Link to="/" className="link" style={{ fontWeight: 800, fontSize: 22, background: "linear-gradient(135deg, #ff2d75, #ff9933, #00d4ff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Hamari</Link>
-        <nav className="nav" style={{ display: "flex", gap: 16, alignItems: "center" }}>
-          {/* Ofertas - siempre visible */}
-          <a href="#" className="link" onClick={(e) => guardNav(e, "/offers", ["admin","provider","staff","client"])}>Ofertas</a>
-          
-          {/* Crear oferta - solo provider y admin */}
+    <header style={{
+      position: "sticky",
+      top: 0,
+      zIndex: 100,
+      background: "rgba(14, 11, 22, 0.8)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+      borderBottom: "1px solid rgba(255,255,255,0.04)",
+    }}>
+      <div className="container" style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "12px 0",
+      }}>
+        <Link to="/" style={{
+          fontWeight: 900,
+          fontSize: 24,
+          fontFamily: "var(--font-display)",
+          letterSpacing: "-0.02em",
+          textDecoration: "none",
+        }}>
+          <span className="grad-text">Hamari</span>
+        </Link>
+
+        <nav style={{
+          display: "flex",
+          gap: 4,
+          alignItems: "center",
+          flexWrap: "wrap",
+          justifyContent: "flex-end",
+        }}>
+          <a href="#" className="nav-link" onClick={(e) => guardNav(e, "/offers", ["admin","provider","staff","client"])}>Ofertas</a>
+
           {(user?.role === "provider" || user?.role === "admin") && (
-            <Link to="/offers/new" className="link">Crear oferta</Link>
+            <Link to="/offers/new" className="nav-link">Crear oferta</Link>
           )}
-          
-          {/* Consultar ofertas (del proveedor) - solo provider y admin */}
+
           {(user?.role === "provider" || user?.role === "admin") && (
-            <Link to="/offers/lookup" className="link">
+            <Link to="/offers/lookup" className="nav-link">
               {user?.role === "provider" ? "Mis ofertas" : "Consultar ofertas"}
             </Link>
           )}
-          
-          {/* Consultar reservas - solo staff y admin */}
+
           {(user?.role === "staff" || user?.role === "admin") && (
-            <Link to="/bookings/lookup" className="link">Consultar reservas</Link>
+            <Link to="/bookings/lookup" className="nav-link">Consultar reservas</Link>
           )}
-          
-          {/* Mis reservas - solo para no identificados y client (admin usa Consultar reservas) */}
+
           {(!user || user?.role === "client") && (
-            <a href="#" className="link" onClick={(e) => guardNav(e, "/bookings", ["client"])}>Mis reservas</a>
+            <a href="#" className="nav-link" onClick={(e) => guardNav(e, "/bookings", ["client"])}>Mis reservas</a>
           )}
-          
-          {/* Gestionar usuarios - solo admin */}
+
           {user?.role === "admin" && (
-            <Link to="/admin/users" className="link">Gestionar usuarios</Link>
+            <Link to="/admin/users" className="nav-link">Gestionar usuarios</Link>
           )}
-          
-          {/* Proveedores */}
-          <Link to="/providers" className="link">Proveedores</Link>
-          
-          {/* Sobre nosotros */}
-          <Link to="/about" className="link">Sobre nosotros</Link>
-          
-          {/* Login/Register o Salir */}
+
+          <Link to="/providers" className="nav-link">Proveedores</Link>
+          <Link to="/about" className="nav-link">Sobre nosotros</Link>
+
+          <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.08)", margin: "0 4px" }} />
+
           {!user ? (
             <>
-              <Link to="/register" className="link">Registrarse</Link>
-              <Link to="/login" className="link">Login</Link>
+              <Link to="/register" className="nav-link">Registrarse</Link>
+              <Link to="/login" style={{
+                background: "var(--grad-brand)",
+                color: "#fff",
+                padding: "8px 18px",
+                borderRadius: "var(--radius-sm)",
+                fontWeight: 600,
+                fontSize: "0.9rem",
+                textDecoration: "none",
+                transition: "all 0.25s ease",
+              }}>Login</Link>
             </>
           ) : (
-            <button className="btn" onClick={logout}>Salir ({user.role})</button>
+            <button className="btn-danger" onClick={logout} style={{ padding: "8px 16px", fontSize: "0.85rem" }}>
+              Salir ({user.role})
+            </button>
           )}
         </nav>
       </div>
-      <Modal 
-        open={denyOpen} 
-        onClose={() => setDenyOpen(false)} 
+      <Modal
+        open={denyOpen}
+        onClose={() => setDenyOpen(false)}
         title="Permiso requerido"
         showLogin={!user}
         onLogin={handleLogin}
@@ -112,6 +144,44 @@ function Nav() {
   );
 }
 
+function Footer() {
+  return (
+    <footer style={{
+      marginTop: "auto",
+      borderTop: "1px solid rgba(255,255,255,0.04)",
+      background: "rgba(14, 11, 22, 0.6)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+    }}>
+      <div className="container" style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: "24px 0",
+        flexWrap: "wrap",
+        gap: 16,
+      }}>
+        <div>
+          <span className="grad-text" style={{ fontWeight: 800, fontSize: 18, fontFamily: "var(--font-display)" }}>
+            Hamari
+          </span>
+          <p style={{ color: "var(--color-text-dim)", fontSize: "0.85rem", margin: "4px 0 0" }}>
+            Experiencias inolvidables en Málaga
+          </p>
+        </div>
+        <div style={{ display: "flex", gap: 24 }}>
+          <Link to="/about" className="nav-link" style={{ fontSize: "0.85rem" }}>Sobre nosotros</Link>
+          <Link to="/providers" className="nav-link" style={{ fontSize: "0.85rem" }}>Proveedores</Link>
+          <Link to="/offers" className="nav-link" style={{ fontSize: "0.85rem" }}>Ofertas</Link>
+        </div>
+        <p style={{ color: "var(--color-text-dim)", fontSize: "0.8rem", margin: 0 }}>
+          &copy; 2025 Hamari. Todos los derechos reservados.
+        </p>
+      </div>
+    </footer>
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -119,89 +189,46 @@ export default function App() {
         <Nav />
         <main>
           <Routes>
-            {/* Home público con carrusel */}
             <Route path="/" element={<HomePage />} />
-            
-            {/* Páginas públicas */}
             <Route path="/about" element={<AboutPage />} />
             <Route path="/providers" element={<ProvidersPage />} />
             <Route path="/register" element={<RegisterPage />} />
-
             <Route path="/login" element={<LoginPage />} />
 
-            {/* Admin: gestión de usuarios */}
-            <Route
-              path="/admin/users"
-              element={
-                <ProtectedRoute roles={["admin"]}>
-                  <AdminUsersPage />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/admin/users" element={
+              <ProtectedRoute roles={["admin"]}><AdminUsersPage /></ProtectedRoute>
+            } />
+            <Route path="/offers" element={
+              <ProtectedRoute roles={["admin","provider","staff","client"]}><OffersPage /></ProtectedRoute>
+            } />
+            <Route path="/offers/:id" element={
+              <ProtectedRoute roles={["admin","provider","staff","client"]}><OfferDetailPage /></ProtectedRoute>
+            } />
+            <Route path="/offers/new" element={
+              <ProtectedRoute roles={["admin","provider"]}><OfferCreatePage /></ProtectedRoute>
+            } />
+            <Route path="/bookings" element={
+              <ProtectedRoute roles={["client"]}><BookingsPage /></ProtectedRoute>
+            } />
+            <Route path="/bookings/lookup" element={
+              <ProtectedRoute roles={["staff","admin"]}><BookingsLookupPage /></ProtectedRoute>
+            } />
+            <Route path="/offers/lookup" element={
+              <ProtectedRoute roles={["provider","admin"]}><OffersLookupPage /></ProtectedRoute>
+            } />
 
-            {/* Listado de ofertas */}
-            <Route
-              path="/offers"
-              element={
-                <ProtectedRoute roles={["admin","provider","staff","client"]}>
-                  <OffersPage />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Detalle oferta: visible a todos los usuarios autenticados */}
-            <Route
-              path="/offers/:id"
-              element={
-                <ProtectedRoute roles={["admin","provider","staff","client"]}>
-                  <OfferDetailPage />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Crear oferta: admin y provider */}
-            <Route
-              path="/offers/new"
-              element={
-                <ProtectedRoute roles={["admin","provider"]}>
-                  <OfferCreatePage />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Mis reservas: client */}
-            <Route
-              path="/bookings"
-              element={
-                <ProtectedRoute roles={["client"]}>
-                  <BookingsPage />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Consultar reservas: staff y admin */}
-            <Route
-              path="/bookings/lookup"
-              element={
-                <ProtectedRoute roles={["staff","admin"]}>
-                  <BookingsLookupPage />
-                </ProtectedRoute>
-              }
-            />
-
-            {/* Consultar ofertas por proveedor: provider y admin */}
-            <Route
-              path="/offers/lookup"
-              element={
-                <ProtectedRoute roles={["provider","admin"]}>
-                  <OffersLookupPage />
-                </ProtectedRoute>
-              }
-            />
-
-            <Route path="*" element={<div className="container">Página no encontrada</div>} />
+            <Route path="*" element={
+              <div className="container" style={{ padding: "80px 0", textAlign: "center" }}>
+                <h1 className="grad-text" style={{ fontSize: "4rem", marginBottom: 16 }}>404</h1>
+                <p style={{ color: "var(--color-text-muted)", fontSize: "1.1rem" }}>Página no encontrada</p>
+                <Link to="/" className="btn-primary" style={{ display: "inline-block", marginTop: 24, padding: "12px 28px", textDecoration: "none" }}>
+                  Volver al inicio
+                </Link>
+              </div>
+            } />
           </Routes>
         </main>
+        <Footer />
       </BrowserRouter>
     </AuthProvider>
   );

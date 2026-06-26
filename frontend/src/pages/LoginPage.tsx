@@ -14,7 +14,7 @@ export default function LoginPage() {
     e.preventDefault(); setMsg(null); setBusy(true);
     try {
       await login(username, password);
-      nav("/"); // a home
+      nav("/");
     } catch (err: unknown) {
       type AxiosLike = { response?: { data?: { error?: string } }; message?: string };
       let message = "No se pudo iniciar sesión";
@@ -31,99 +31,113 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="container" style={{ padding: "32px 0", maxWidth: 500 }}>
-      <h1 style={{
-        background: "linear-gradient(135deg, #ff2d75, #ff9933, #00d4ff)",
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
-        backgroundClip: "text",
-        marginBottom: 8,
-        textAlign: "center",
+    <div className="container" style={{
+      padding: "64px 0",
+      maxWidth: 480,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+    }}>
+      <div className="card anim-fade-in-up" style={{
+        padding: "40px 36px",
+        width: "100%",
       }}>
-        Iniciar Sesión
-      </h1>
-      <p style={{ textAlign: "center", color: "var(--color-text-muted)", marginBottom: 24 }}>
-        Accede a tu cuenta de Hamari
-      </p>
-
-      {msg && (
-        <div style={{
-          background: "rgba(255, 45, 117, 0.1)",
-          border: "1px solid var(--color-magenta)",
-          borderRadius: 8,
-          padding: 12,
-          marginBottom: 16,
-          color: "var(--color-magenta)",
+        <h1 className="grad-text" style={{
+          marginBottom: 8,
+          textAlign: "center",
+          fontSize: "1.8rem",
+          fontFamily: "var(--font-display)",
         }}>
-          {msg}
-        </div>
-      )}
-
-      <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div>
-          <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-            Usuario
-          </label>
-          <input
-            placeholder="Usuario o email"
-            value={username}
-            onChange={e=>setU(e.target.value)}
-            required
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid rgba(255, 45, 117, 0.3)",
-              background: "var(--color-bg-card)",
-              color: "var(--color-text-light)",
-              fontSize: "1rem",
-            }}
-          />
-        </div>
-
-        <div>
-          <label style={{ display: "block", marginBottom: 6, color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-            Contraseña
-          </label>
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={e=>setP(e.target.value)}
-            required
-            style={{
-              width: "100%",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid rgba(255, 45, 117, 0.3)",
-              background: "var(--color-bg-card)",
-              color: "var(--color-text-light)",
-              fontSize: "1rem",
-            }}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={busy}
-          style={{
-            marginTop: 8,
-            padding: "12px 24px",
-            fontSize: "1.1rem",
-            opacity: busy ? 0.6 : 1,
-            cursor: busy ? "not-allowed" : "pointer",
-          }}
-        >
-          {busy ? "Entrando..." : "Entrar"}
-        </button>
-
-        <p style={{ textAlign: "center", color: "var(--color-text-muted)", marginTop: 8 }}>
-          ¿No tienes cuenta?{" "}
-          <Link to="/register" style={{ color: "var(--color-cyan)", textDecoration: "none" }}>
-          Regístrate aquí
-          </Link>
+          Iniciar Sesión
+        </h1>
+        <p style={{
+          textAlign: "center",
+          color: "var(--color-text-dim)",
+          marginBottom: 32,
+          fontSize: "0.95rem",
+        }}>
+          Accede a tu cuenta de Hamari
         </p>
-      </form>
+
+        {msg && (
+          <div style={{
+            background: "rgba(255, 45, 117, 0.08)",
+            border: "1px solid rgba(255,45,117,0.2)",
+            borderRadius: "var(--radius-sm)",
+            padding: 14,
+            marginBottom: 20,
+            color: "var(--color-magenta)",
+            fontSize: "0.9rem",
+          }}>
+            {msg}
+          </div>
+        )}
+
+        <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+          <div>
+            <label style={{
+              display: "block",
+              marginBottom: 8,
+              color: "var(--color-text-muted)",
+              fontSize: "0.85rem",
+              fontWeight: 500,
+            }}>
+              Usuario
+            </label>
+            <input
+              placeholder="Usuario o email"
+              value={username}
+              onChange={e=>setU(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label style={{
+              display: "block",
+              marginBottom: 8,
+              color: "var(--color-text-muted)",
+              fontSize: "0.85rem",
+              fontWeight: 500,
+            }}>
+              Contraseña
+            </label>
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={e=>setP(e.target.value)}
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={busy}
+            style={{
+              marginTop: 8,
+              padding: "14px 24px",
+              fontSize: "1.05rem",
+              width: "100%",
+            }}
+          >
+            {busy ? "Entrando..." : "Entrar"}
+          </button>
+
+          <p style={{
+            textAlign: "center",
+            color: "var(--color-text-dim)",
+            marginTop: 8,
+            fontSize: "0.9rem",
+          }}>
+            ¿No tienes cuenta?{" "}
+            <Link to="/register" style={{ color: "var(--color-cyan)", fontWeight: 500 }}>
+              Regístrate aquí
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

@@ -9,39 +9,24 @@ export default function BookingsLookupPage() {
   const [busy, setBusy] = useState(false);
 
   async function search() {
-    setMsg(null);
-    setBusy(true);
-    setResult(null);
-
+    setMsg(null); setBusy(true); setResult(null);
     try {
       const params: Record<string, string> = {};
       if (offerId) params.offer_id = offerId;
       if (clientDni) params.client_dni = clientDni;
-
-      if (!params.offer_id && !params.client_dni) {
-        setMsg("Introduce ID de oferta o DNI de cliente");
-        setBusy(false);
-        return;
-      }
-
+      if (!params.offer_id && !params.client_dni) { setMsg("Introduce ID de oferta o DNI de cliente"); setBusy(false); return; }
       const { data } = await api.get("/bookings/lookup", { params });
       setResult(data);
-
-      if (data.length === 0) {
-        setMsg("No se encontraron reservas con esos criterios");
-      }
+      if (data.length === 0) setMsg("No se encontraron reservas con esos criterios");
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } }; message?: string };
       setMsg(e.response?.data?.error ?? e.message ?? "Error en la consulta");
       setResult(null);
-    } finally {
-      setBusy(false);
-    }
+    } finally { setBusy(false); }
   }
 
   async function cancelBooking(id: string) {
     if (!confirm("¿Estás seguro de que quieres cancelar esta reserva?")) return;
-
     try {
       await api.patch(`/bookings/${id}/status`, { status: "CANCELLED" });
       setMsg("✅ Reserva cancelada correctamente");
@@ -52,253 +37,82 @@ export default function BookingsLookupPage() {
     }
   }
 
+  const labelStyle: React.CSSProperties = {
+    display: "block", marginBottom: 8, color: "var(--color-text-muted)", fontSize: "0.85rem", fontWeight: 500,
+  };
+
   return (
-    <div className="container" style={{ padding: "32px 0" }}>
-      <h1
-        style={{
-          background: "linear-gradient(135deg, #ff2d75, #ff9933, #00d4ff)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-          marginBottom: 8,
-        }}
-      >
+    <div className="container" style={{ padding: "40px 0" }}>
+      <h1 className="grad-text anim-fade-in-up" style={{
+        marginBottom: 8, fontSize: "clamp(1.6rem, 3vw, 2.2rem)", fontFamily: "var(--font-display)",
+      }}>
         Consultar Reservas
       </h1>
-
-      <p style={{ color: "var(--color-text-muted)", marginBottom: 24 }}>
+      <p className="anim-fade-in-up delay-1" style={{ color: "var(--color-text-dim)", marginBottom: 32, fontSize: "0.95rem" }}>
         Busca reservas por ID de oferta o DNI de cliente
       </p>
 
-      {/* FILTROS (flex + wrap para que no se pisen) */}
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          marginBottom: 24,
-          maxWidth: 900,
-          alignItems: "end",
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ flex: "1 1 360px", minWidth: 0 }}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: 6,
-              color: "var(--color-text-light)",
-              fontSize: "0.9rem",
-            }}
-          >
-            ID de Oferta:
-          </label>
-          <input
-            value={offerId}
-            onChange={(e) => setOfferId(e.target.value)}
-            placeholder="ID de la oferta"
-            style={{
-              width: "100%",
-              minWidth: 0,
-              boxSizing: "border-box",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid rgba(255, 45, 117, 0.3)",
-              background: "var(--color-bg-card)",
-              color: "var(--color-text-light)",
-              fontSize: "1rem",
-            }}
-          />
+      <div className="card anim-fade-in-up delay-2" style={{
+        display: "flex", gap: 14, marginBottom: 28, alignItems: "end", flexWrap: "wrap", padding: 20,
+      }}>
+        <div style={{ flex: "1 1 300px", minWidth: 0 }}>
+          <label style={labelStyle}>ID de Oferta</label>
+          <input value={offerId} onChange={(e) => setOfferId(e.target.value)} placeholder="ID de la oferta" />
         </div>
-
-        <div style={{ flex: "1 1 360px", minWidth: 0 }}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: 6,
-              color: "var(--color-text-light)",
-              fontSize: "0.9rem",
-            }}
-          >
-            DNI del Cliente:
-          </label>
-          <input
-            value={clientDni}
-            onChange={(e) => setClientDni(e.target.value)}
-            placeholder="12345678A"
-            style={{
-              width: "100%",
-              minWidth: 0,
-              boxSizing: "border-box",
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid rgba(255, 45, 117, 0.3)",
-              background: "var(--color-bg-card)",
-              color: "var(--color-text-light)",
-              fontSize: "1rem",
-            }}
-          />
+        <div style={{ flex: "1 1 300px", minWidth: 0 }}>
+          <label style={labelStyle}>DNI del Cliente</label>
+          <input value={clientDni} onChange={(e) => setClientDni(e.target.value)} placeholder="12345678A" />
         </div>
-
-        <button
-          onClick={search}
-          disabled={busy}
-          style={{
-            // 👇 clave para evitar que se “monte” por CSS global
-            position: "static",
-            height: 42,
-            whiteSpace: "nowrap",
-            flex: "0 0 auto",
-            opacity: busy ? 0.6 : 1,
-          }}
-        >
+        <button className="btn-primary" onClick={search} disabled={busy} style={{ height: 44, padding: "0 24px", whiteSpace: "nowrap" }}>
           {busy ? "Buscando..." : "Buscar"}
         </button>
       </div>
 
       {msg && (
-        <div
-          style={{
-            background: msg.includes("✅")
-              ? "rgba(0, 212, 255, 0.1)"
-              : "rgba(255, 45, 117, 0.1)",
-            border: `1px solid ${
-              msg.includes("✅") ? "var(--color-cyan)" : "var(--color-magenta)"
-            }`,
-            borderRadius: 8,
-            padding: 12,
-            marginBottom: 20,
-            color: msg.includes("✅") ? "var(--color-cyan)" : "var(--color-magenta)",
-          }}
-        >
-          {msg}
-        </div>
+        <div style={{
+          background: msg.includes("✅") ? "rgba(0, 230, 138, 0.06)" : "rgba(255, 45, 117, 0.06)",
+          border: `1px solid ${msg.includes("✅") ? "rgba(0,230,138,0.2)" : "rgba(255,45,117,0.2)"}`,
+          borderRadius: "var(--radius-sm)", padding: 14, marginBottom: 20,
+          color: msg.includes("✅") ? "var(--color-emerald)" : "var(--color-magenta)", fontSize: "0.9rem",
+        }}>{msg}</div>
       )}
 
       {result && result.length > 0 && (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-            gap: 20,
-          }}
-        >
-          {result.map((b) => (
-            <div
-              key={b._id}
-              style={{
-                background: "var(--color-bg-card)",
-                borderRadius: 12,
-                padding: 20,
-                border: `2px solid ${
-                  b.status === "CANCELLED"
-                    ? "rgba(128, 128, 128, 0.3)"
-                    : "rgba(0, 212, 255, 0.3)"
-                }`,
-                transition: "all 0.3s",
-                display: "flex",
-                flexDirection: "column",
-                opacity: b.status === "CANCELLED" ? 0.6 : 1,
-              }}
-              onMouseEnter={(e) => {
-                if (b.status !== "CANCELLED") {
-                  e.currentTarget.style.transform = "translateY(-4px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 8px 20px rgba(0, 212, 255, 0.3)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <span style={{ fontSize: "1.5rem" }}>📅</span>
-                <div>
-                  <div style={{ color: "var(--color-text-muted)", fontSize: "0.8rem" }}>
-                    Fecha
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+          {result.map((b, i) => {
+            const isCancelled = b.status === "CANCELLED";
+            return (
+              <div key={b._id} className="card anim-fade-in-up" style={{
+                padding: 22, display: "flex", flexDirection: "column",
+                opacity: isCancelled ? 0.55 : 1,
+                borderColor: isCancelled ? "rgba(157,150,173,0.15)" : "rgba(0,212,255,0.15)",
+                animationDelay: `${i * 0.05}s`,
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 14 }}>
+                  <div>
+                    <div style={{ color: "var(--color-text-dim)", fontSize: "0.78rem", marginBottom: 2 }}>Fecha</div>
+                    <div style={{ color: "var(--color-cyan)", fontSize: "1.15rem", fontWeight: 700, fontFamily: "var(--font-display)" }}>{b.date}</div>
                   </div>
-                  <div
-                    style={{
-                      color: "var(--color-cyan)",
-                      fontSize: "1.2rem",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {b.date}
-                  </div>
+                  <span className={`badge ${isCancelled ? "badge-muted" : "badge-emerald"}`}>
+                    {isCancelled ? "CANCELADA" : b.status}
+                  </span>
                 </div>
+                <div style={{ marginBottom: 12 }}>
+                  <span style={{ color: "var(--color-text-dim)", fontSize: "0.82rem" }}>Cliente: </span>
+                  <span style={{ color: "var(--color-text-light)", fontWeight: 600, fontSize: "0.9rem" }}>{b.client_dni}</span>
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <span style={{ color: "var(--color-text-dim)", fontSize: "0.82rem" }}>ID Oferta: </span>
+                  <span style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>{b.offer_id}</span>
+                </div>
+                {!isCancelled && (
+                  <button className="btn-danger" onClick={() => cancelBooking(b._id)} style={{ marginTop: "auto", padding: "10px 16px", fontSize: "0.88rem" }}>
+                    Cancelar Reserva
+                  </button>
+                )}
               </div>
-
-              <div style={{ marginBottom: 12 }}>
-                <span style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
-                  Cliente:{" "}
-                </span>
-                <span style={{ color: "var(--color-text-light)", fontWeight: 600 }}>
-                  {b.client_dni}
-                </span>
-              </div>
-
-              <div style={{ marginBottom: 12 }}>
-                <span style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
-                  Estado:{" "}
-                </span>
-                <span
-                  style={{
-                    display: "inline-block",
-                    padding: "4px 12px",
-                    borderRadius: 6,
-                    fontSize: "0.85rem",
-                    fontWeight: 600,
-                    background:
-                      b.status === "CANCELLED"
-                        ? "rgba(128, 128, 128, 0.2)"
-                        : "rgba(0, 212, 255, 0.2)",
-                    color:
-                      b.status === "CANCELLED"
-                        ? "var(--color-text-muted)"
-                        : "var(--color-cyan)",
-                  }}
-                >
-                  {b.status === "CANCELLED" ? "CANCELADA" : b.status}
-                </span>
-              </div>
-
-              <div style={{ marginBottom: 16 }}>
-                <span style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
-                  ID Oferta:{" "}
-                </span>
-                <span style={{ color: "var(--color-text-light)", fontSize: "0.9rem" }}>
-                  {b.offer_id}
-                </span>
-              </div>
-
-              {b.status !== "CANCELLED" && (
-                <button
-                  onClick={() => cancelBooking(b._id)}
-                  style={{
-                    marginTop: "auto",
-                    padding: "10px 16px",
-                    borderRadius: 8,
-                    border: "1px solid rgba(255, 45, 117, 0.4)",
-                    background: "rgba(255, 45, 117, 0.1)",
-                    color: "var(--color-magenta)",
-                    cursor: "pointer",
-                    fontSize: "0.95rem",
-                    fontWeight: 600,
-                    transition: "all 0.3s",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(255, 45, 117, 0.2)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "rgba(255, 45, 117, 0.1)";
-                  }}
-                >
-                  Cancelar Reserva
-                </button>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

@@ -9,23 +9,25 @@ const API_BASE =
       ? RAW_BASE
       : RAW_BASE.replace(/\/+$/, "") + "/api";
 
-console.log("RAW_BASE =", JSON.stringify(RAW_BASE));
-console.log("API_BASE =", API_BASE);
-
 export const api = axios.create({
   baseURL: API_BASE,
   headers: { "Content-Type": "application/json" },
 });
 
-api.interceptors.request.use((config) => {
-  console.log(
-    "[API REQUEST]",
-    "baseURL =", config.baseURL,
-    "url =", config.url
-  );
-  return config;
-});
- 
+export function setAuthToken(token: string | null) {
+  if (token) {
+    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+    return;
+  }
+
+  delete api.defaults.headers.common.Authorization;
+}
+
+export function getApiErrorMessage(err: unknown, fallback: string) {
+  const e = err as { response?: { data?: { error?: string } }; message?: string };
+  return e.response?.data?.error ?? e.message ?? fallback;
+}
+
 export type Offer = {
   _id: string;
   provider_dni: string;

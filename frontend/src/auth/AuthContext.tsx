@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from "react";
-import { api } from "../api";
+import { api, setAuthToken } from "../api";
 
 type User = { username: string; role: "admin"|"provider"|"staff"|"client"; ref_dni?: string; };
 type AuthState = { user: User | null; token: string | null; loading: boolean; };
@@ -20,30 +20,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Lee token de localStorage y valida con /auth/me
   useEffect(() => {
+    let cancelled = false;
     const t = localStorage.getItem("token");
     if (!t) { setState({ user: null, token: null, loading: false }); return; }
     setState(s => ({ ...s, token: t }));
-    api.defaults.headers.common["Authorization"] = `Bearer ${t}`;
+    setAuthToken(t);
     api.get("/auth/me").then(r => {
+      if (cancelled) return;
       setState({ user: r.data.user, token: t, loading: false });
     }).catch(() => {
+      if (cancelled) return;
       localStorage.removeItem("token");
-      delete api.defaults.headers.common["Authorization"];
+      setAuthToken(null);
       setState({ user: null, token: null, loading: false });
     });
+
+    return () => { cancelled = true; };
   }, []);
 
   async function login(username: string, password: string) {
     const { data } = await api.post("/auth/login", { username, password });
     const token = data.token as string;
     localStorage.setItem("token", token);
-    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    setAuthToken(token);
     setState({ user: data.user, token, loading: false });
   }
 
   function logout() {
     localStorage.removeItem("token");
-    delete api.defaults.headers.common["Authorization"];
+    setAuthToken(null);
     setState({ user: null, token: null, loading: false });
   }
 

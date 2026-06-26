@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from ..utils.authz import *
+from ..utils.http import get_json_body
 from backend import mongo
 
 from ..services.clients_service import (
@@ -24,8 +25,8 @@ clients_bp = Blueprint("clients", __name__)
 @clients_bp.route("/", methods=["POST"])
 @require_roles("admin")
 def create_client():
-    data = request.get_json(force=True)
     try:
+        data = get_json_body()
         dni = svc_create_client(mongo.db, data)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -50,8 +51,8 @@ def client_detail(dni):
 @clients_bp.route("/<dni>", methods=["PUT", "PATCH"])
 @require_self_or_admin("dni")
 def update_client(dni):
-    data = request.get_json(force=True)
     try:
+        data = get_json_body()
         ok = svc_update_client(mongo.db, dni, data)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

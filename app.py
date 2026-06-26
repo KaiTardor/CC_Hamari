@@ -4,4 +4,4 @@ from backend.config import Config
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True, host=Config.FLASK_HOST, port=Config.FLASK_PORT)
+    app.run(debug=Config.FLASK_DEBUG, host=Config.FLASK_HOST, port=Config.FLASK_PORT)

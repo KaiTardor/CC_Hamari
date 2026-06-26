@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from ..utils.authz import *
+from ..utils.http import get_json_body
 from backend import mongo
 
 from ..services.staff_service import (
@@ -24,8 +25,8 @@ staff_bp = Blueprint("staff", __name__)
 @staff_bp.route("/", methods=["POST"])
 @require_roles("admin")
 def create_staff():
-    data = request.get_json(force=True)
     try:
+        data = get_json_body()
         dni = svc_create_staff(mongo.db, data)
     except ValueError as e:
         msg = str(e)
@@ -54,8 +55,8 @@ def staff_detail(dni):
 @staff_bp.route("/<dni>", methods=["PUT", "PATCH"])
 @require_self_or_admin("dni")
 def update_staff(dni):
-    data = request.get_json(force=True)
     try:
+        data = get_json_body()
         ok = svc_update_staff(mongo.db, dni, data)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

@@ -1,14 +1,23 @@
-# Fichero generado por ChatGPT :)
 import os
 import time
 from typing import Dict, Optional
 
 import jwt
 
-# Claves/algoritmo y tiempo de expiración por defecto
-JWT_SECRET = os.getenv("JWT_SECRET", "dev-secret-change-me")
-JWT_ALG = "HS256"
-JWT_TTL_SECONDS = 24 * 3600  # 1 día
+
+def _jwt_secret() -> str:
+    return os.getenv("JWT_SECRET", "dev-secret-change-me")
+
+
+def _jwt_alg() -> str:
+    return os.getenv("JWT_ALGORITHM", "HS256")
+
+
+def _jwt_ttl_seconds() -> int:
+    try:
+        return int(os.getenv("JWT_TTL_SECONDS", str(24 * 3600)))
+    except ValueError:
+        return 24 * 3600
 
 
 def create_jwt(payload: Dict) -> str:
@@ -18,10 +27,10 @@ def create_jwt(payload: Dict) -> str:
     now = int(time.time())
     to_encode = {
         "iat": now,
-        "exp": now + JWT_TTL_SECONDS,
+        "exp": now + _jwt_ttl_seconds(),
         **payload,
     }
-    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALG)
+    return jwt.encode(to_encode, _jwt_secret(), algorithm=_jwt_alg())
 
 
 def decode_jwt(token: str) -> Optional[Dict]:
@@ -30,6 +39,6 @@ def decode_jwt(token: str) -> Optional[Dict]:
     Retorna el payload (dict) si el token es válido, o None en caso de error
     """
     try:
-        return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALG])
+        return jwt.decode(token, _jwt_secret(), algorithms=[_jwt_alg()])
     except jwt.PyJWTError:
         return None

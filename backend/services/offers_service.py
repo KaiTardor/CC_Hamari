@@ -1,6 +1,7 @@
 from bson import ObjectId
 
 from ..utils.dates import daterange
+from ..utils.errors import ConflictError
 from ..utils.utils import to_float_or_none
 
 
@@ -151,6 +152,11 @@ def update_offer(db, offer_id, data, user=None):
         own = db.offers.find_one({"_id": _id, "provider_dni": user.get("ref_dni")})
         if not own:
             raise PermissionError("No autorizado para modificar dicha oferta")
+    else:
+        own = db.offers.find_one({"_id": _id})
+
+    if not own:
+        return False
 
     allowed = {
         "title",
@@ -182,6 +188,36 @@ def update_offer(db, offer_id, data, user=None):
             update["daily_capacity"] = int(update["daily_capacity"])
         except Exception:
             raise ValueError("Capacidad diaria inválida")
+        if update["daily_capacity"] <= 0:
+            raise ValueError("Capacidad diaria inválida")
+
+    inventory_fields = {"available_from", "available_to", "daily_capacity"}
+    inventory_changed = bool(update.keys() & inventory_fields)
+    if inventory_changed:
+        has_bookings = db.bookings.count_documents({"offer_id": _id}, limit=1) > 0
+        if has_bookings:
+            raise ConflictError(
+                "No se puede cambiar disponibilidad o capacidad con reservas existentes"
+            )
+
+        available_from = update.get("available_from", own.get("available_from"))
+        available_to = update.get("available_to", own.get("available_to"))
+        daily_capacity = update.get("daily_capacity", own.get("daily_capacity"))
+
+        try:
+            inventory_docs = [
+                {
+                    "offer_id": _id,
+                    "date": d,
+                    "capacity": int(daily_capacity),
+                    "booked": 0,
+                }
+                for d in daterange(available_from, available_to)
+            ]
+        except Exception:
+            raise ValueError("Las fechas deben tener formato DD/MM/AAAA")
+        if not inventory_docs:
+            raise ValueError("available_from no puede ser posterior a available_to")
 
     if not update:
         raise ValueError("No hay campos válidos para actualizar")
@@ -189,6 +225,11 @@ def update_offer(db, offer_id, data, user=None):
     res = db.offers.update_one({"_id": _id}, {"$set": update})
     if res.matched_count == 0:
         return False
+
+    if inventory_changed:
+        db.offer_inventory.delete_many({"offer_id": _id})
+        if inventory_docs:
+            db.offer_inventory.insert_many(inventory_docs)
     return True
 
 

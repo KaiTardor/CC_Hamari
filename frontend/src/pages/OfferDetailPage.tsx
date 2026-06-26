@@ -10,85 +10,70 @@ export default function OfferDetailPage() {
   const [offer, setOffer] = useState<Offer | null>(null);
   const [open, setOpen] = useState(false);
 
-  useEffect(() => { 
-    if (id) fetchOffer(id).then(setOffer).catch(() => setOffer(null)); 
+  useEffect(() => {
+    if (id) fetchOffer(id).then(setOffer).catch(() => setOffer(null));
   }, [id]);
-  
+
   if (!offer) return (
-    <div className="container" style={{ padding: "32px 0", textAlign: "center" }}>
-      <div style={{ color: "var(--color-text-muted)" }}>Cargando…</div>
+    <div className="container" style={{ padding: "80px 0", textAlign: "center" }}>
+      <div className="skeleton" style={{ width: 200, height: 28, margin: "0 auto 16px", borderRadius: 4 }} />
+      <div className="skeleton" style={{ width: 300, height: 16, margin: "0 auto", borderRadius: 4 }} />
     </div>
   );
 
   return (
-    <div className="container" style={{ padding: "32px 0", maxWidth: 800 }}>
-      <div style={{
-        background: "var(--color-bg-card)",
-        borderRadius: 16,
-        padding: 32,
-        border: "2px solid rgba(255, 45, 117, 0.3)",
-      }}>
-        <h1 style={{
-          background: "linear-gradient(135deg, #ff2d75, #ff9933, #00d4ff)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-          marginBottom: 16,
-          fontSize: "2rem",
+    <div className="container" style={{ padding: "40px 0", maxWidth: 800 }}>
+      <div className="card anim-fade-in-up" style={{ padding: 36 }}>
+        <h1 className="grad-text" style={{
+          marginBottom: 20,
+          fontSize: "clamp(1.5rem, 3vw, 2rem)",
+          fontFamily: "var(--font-display)",
         }}>
           {offer.title}
         </h1>
-        
-        <p style={{ 
-          color: "var(--color-text-muted)", 
-          lineHeight: 1.7, 
-          marginBottom: 24,
+
+        <p style={{
+          color: "var(--color-text-muted)",
+          lineHeight: 1.8,
+          marginBottom: 32,
           fontSize: "1.05rem",
         }}>
           {offer.description}
         </p>
 
-        <div style={{ 
-          display: "grid", 
-          gap: 16, 
+        <div style={{
+          display: "grid",
+          gap: 16,
           marginBottom: 32,
-          background: "rgba(255, 45, 117, 0.05)",
-          padding: 20,
-          borderRadius: 12,
+          background: "rgba(255, 45, 117, 0.04)",
+          padding: 24,
+          borderRadius: "var(--radius-md)",
+          border: "1px solid rgba(255,45,117,0.1)",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ 
-              fontSize: "1.5rem",
-              background: "linear-gradient(135deg, var(--color-magenta), var(--color-orange))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              fontWeight: 700,
-            }}>
-              💰
-            </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <span style={{ fontSize: "1.5rem" }}>💰</span>
             <div>
-              <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>Precio</div>
-              <div style={{ color: "var(--color-orange)", fontSize: "1.4rem", fontWeight: 700 }}>
+              <div style={{ color: "var(--color-text-dim)", fontSize: "0.82rem", marginBottom: 2 }}>Precio</div>
+              <div style={{ color: "var(--color-orange)", fontSize: "1.5rem", fontWeight: 700, fontFamily: "var(--font-display)" }}>
                 {offer.price.toFixed(2)} €
               </div>
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <span style={{ fontSize: "1.5rem" }}>📅</span>
             <div>
-              <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>Disponibilidad</div>
-              <div style={{ color: "var(--color-cyan)", fontWeight: 600 }}>
+              <div style={{ color: "var(--color-text-dim)", fontSize: "0.82rem", marginBottom: 2 }}>Disponibilidad</div>
+              <div className="badge badge-cyan">
                 {offer.available_from} → {offer.available_to}
               </div>
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <span style={{ fontSize: "1.5rem" }}>👥</span>
             <div>
-              <div style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>Capacidad por día</div>
+              <div style={{ color: "var(--color-text-dim)", fontSize: "0.82rem", marginBottom: 2 }}>Capacidad por día</div>
               <div style={{ color: "var(--color-text-light)", fontWeight: 600 }}>
                 {offer.daily_capacity} {offer.daily_capacity === 1 ? "reserva" : "reservas"}
               </div>
@@ -96,13 +81,15 @@ export default function OfferDetailPage() {
           </div>
         </div>
 
-        <button 
+        <button
+          className="btn-primary"
           onClick={() => setOpen(true)}
           style={{
             width: "100%",
-            padding: "14px 24px",
-            fontSize: "1.2rem",
+            padding: "16px 24px",
+            fontSize: "1.15rem",
             fontWeight: 700,
+            fontFamily: "var(--font-display)",
           }}
         >
           Reservar Ahora
@@ -110,9 +97,9 @@ export default function OfferDetailPage() {
       </div>
 
       {open && (
-        <BookingModal 
-          offerId={offer._id} 
-          onClose={() => setOpen(false)} 
+        <BookingModal
+          offerId={offer._id}
+          onClose={() => setOpen(false)}
           clientDniDefault={user?.ref_dni}
         />
       )}
