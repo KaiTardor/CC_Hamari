@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { api, getApiErrorMessage } from "../api";
+import { useConfirm } from "../components/useConfirm";
 
 type Client = { dni: string; name: string; surname: string; email: string; phone: string; sex?: string; birth_date?: string; };
 type Provider = { dni: string; company_name: string; contact_name?: string; contact_surname?: string; email?: string; phone?: string; };
@@ -7,6 +8,7 @@ type Staff = { dni: string; name: string; surname: string; email: string; phone:
 type Tab = "clients" | "providers" | "staff";
 
 export default function AdminUsersPage() {
+  const { confirm } = useConfirm();
   const [activeTab, setActiveTab] = useState<Tab>("clients");
   const [clients, setClients] = useState<Client[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -30,7 +32,13 @@ export default function AdminUsersPage() {
 
   const handleDelete = async (dni: string) => {
     const label = activeTab === "clients" ? "cliente" : activeTab === "providers" ? "proveedor" : "empleado";
-    if (!confirm(`¿Seguro que deseas eliminar este ${label}?`)) return;
+    const confirmed = await confirm({
+      title: `Eliminar ${label}`,
+      message: `¿Seguro que deseas eliminar este ${label}? Esta acción no se puede deshacer.`,
+      confirmLabel: "Eliminar",
+      tone: "danger",
+    });
+    if (!confirmed) return;
     try {
       const endpoint = activeTab === "clients" ? "/clients/" : activeTab === "providers" ? "/providers/" : "/staff/";
       await api.delete(`${endpoint}${dni}`);

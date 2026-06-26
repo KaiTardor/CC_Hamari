@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { api, type Booking } from "../api";
+import { useConfirm } from "../components/useConfirm";
 
 export default function BookingsLookupPage() {
+  const { confirm } = useConfirm();
   const [offerId, setOfferId] = useState("");
   const [clientDni, setClientDni] = useState("");
   const [result, setResult] = useState<Booking[] | null>(null);
@@ -26,7 +28,13 @@ export default function BookingsLookupPage() {
   }
 
   async function cancelBooking(id: string) {
-    if (!confirm("¿Estás seguro de que quieres cancelar esta reserva?")) return;
+    const confirmed = await confirm({
+      title: "Cancelar reserva",
+      message: "¿Estás seguro de que quieres cancelar esta reserva? La operación actualizará el estado inmediatamente.",
+      confirmLabel: "Cancelar reserva",
+      tone: "danger",
+    });
+    if (!confirmed) return;
     try {
       await api.patch(`/bookings/${id}/status`, { status: "CANCELLED" });
       setMsg("✅ Reserva cancelada correctamente");

@@ -1,9 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../auth/AuthContext";
 import { fetchBookings, cancelBooking, fetchOffers, getApiErrorMessage, type Booking, type Offer } from "../api";
+import { useConfirm } from "../components/useConfirm";
+
+function parseBookingDate(value: string) {
+  const [day, month, year] = value.split("/").map(Number);
+  return new Date(year, month - 1, day).getTime();
+}
+
+function isPastBooking(value: string) {
+  const bookingDate = parseBookingDate(value);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Number.isFinite(bookingDate) && bookingDate < today.getTime();
+}
 
 export default function BookingsPage() {
   const { user } = useAuth();
+  const { confirm } = useConfirm();
   const [dni, setDni] = useState("");
   const [items, setItems] = useState<Booking[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
@@ -32,10 +46,22 @@ export default function BookingsPage() {
   }, [isClient, user?.ref_dni, loadBookings]);
 
   async function cancel(id: string) {
-    if (!confirm("¿Estás seguro de que quieres cancelar esta reserva?")) return;
+    const confirmed = await confirm({
+      title: "Cancelar reserva",
+      message: "¿Estás seguro de que quieres cancelar esta reserva? Liberaremos la plaza asociada.",
+      confirmLabel: "Cancelar reserva",
+      tone: "danger",
+    });
+    if (!confirmed) return;
     try { await cancelBooking(id); await loadBookings(dni); setMsg("✅ Reserva cancelada correctamente"); }
     catch (err: unknown) { setMsg(getApiErrorMessage(err, "No se pudo cancelar")); }
   }
+
+  const activeBookings = items.filter((booking) => booking.status !== "CANCELLED");
+  const previousBookings = items.filter((booking) => booking.status === "CANCELLED" || isPastBooking(booking.date));
+  const nextBooking = activeBookings
+    .filter((booking) => !isPastBooking(booking.date))
+    .sort((a, b) => parseBookingDate(a.date) - parseBookingDate(b.date))[0];
 
   return (
     <div className="container" style={{ padding: "40px 0" }}>
@@ -47,6 +73,26 @@ export default function BookingsPage() {
       <p className="anim-fade-in-up delay-1" style={{ color: "var(--color-text-dim)", marginBottom: 32, fontSize: "0.95rem" }}>
         {isClient ? "Aquí puedes ver y gestionar todas tus reservas" : "Consulta las reservas por DNI"}
       </p>
+
+      {items.length > 0 && (
+        <div className="booking-summary-grid anim-fade-in-up delay-2">
+          <div className="booking-summary-card">
+            <span>Reservas activas</span>
+            <strong>{activeBookings.length}</strong>
+            <p>Planes listos para disfrutar.</p>
+          </div>
+          <div className="booking-summary-card">
+            <span>Experiencias anteriores</span>
+            <strong>{previousBookings.length}</strong>
+            <p>Historial de actividades realizadas o canceladas.</p>
+          </div>
+          <div className="booking-summary-card booking-summary-featured">
+            <span>Próxima experiencia</span>
+            <strong>{nextBooking ? nextBooking.date : "Sin fecha"}</strong>
+            <p>{nextBooking ? offerMap[nextBooking.offer_id]?.title ?? "Oferta reservada" : "Haz una nueva reserva para llenar este espacio."}</p>
+          </div>
+        </div>
+      )}
 
       {!isClient && (
         <div className="card anim-fade-in-up delay-2" style={{
@@ -128,6 +174,29 @@ export default function BookingsPage() {
                 )}
               </div>
 
+              <div className="booking-card-details">
+                <div>
+                  <span>ID reserva</span>
+                  <strong>{b._id.slice(-8).toUpperCase()}</strong>
+                </div>
+                <div>
+                  <span>Cliente</span>
+                  <strong>{b.client_dni}</strong>
+                </div>
+                <div>
+                  <span>Próximo paso</span>
+                  <strong>{isCancelled ? "Finalizada" : isPastBooking(b.date) ? "Valorar experiencia" : "Preparar llegada"}</strong>
+                </div>
+              </div>
+
+              {!isCancelled && !isPastBooking(b.date) && (
+                <div className="booking-mini-timeline">
+                  <span className="is-done">Reserva</span>
+                  <span className="is-done">Plaza</span>
+                  <span>Experiencia</span>
+                </div>
+              )}
+
               {!isCancelled && (
                 <button
                   className="btn-danger"
@@ -141,6 +210,22 @@ export default function BookingsPage() {
           );
         })}
       </div>
+
+      {previousBookings.length > 0 && (
+        <section className="experience-strip anim-fade-in-up" style={{ marginTop: 32 }}>
+          <div>
+            <span className="eyebrow">Experiencias anteriores</span>
+            <h2>Tu historial Hamari</h2>
+          </div>
+          <div className="experience-quotes">
+            {previousBookings.slice(0, 3).map((booking) => (
+              <blockquote key={booking._id}>
+                {offerMap[booking.offer_id]?.title ?? "Experiencia Hamari"} · {booking.date}
+              </blockquote>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

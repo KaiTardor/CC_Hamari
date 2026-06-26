@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import ProtectedRoute from "./auth/ProtectedRoute";
@@ -17,12 +17,21 @@ import ProvidersPage from "./pages/ProvidersPage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import Modal from "./components/Modal";
+import { ConfirmProvider } from "./components/ConfirmProvider";
+import { ToastProvider } from "./components/ToastProvider";
+import { useToast } from "./components/useToast";
+
+function navClass({ isActive }: { isActive: boolean }) {
+  return isActive ? "nav-link is-active" : "nav-link";
+}
 
 function Nav() {
   const { user, logout } = useAuth();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [denyOpen, setDenyOpen] = useState(false);
   const [denyMsg, setDenyMsg] = useState("Lo siento, no tienes permiso.");
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   type Role = "admin" | "provider" | "staff" | "client";
   const can = (roles?: Role[]) => {
@@ -33,19 +42,36 @@ function Nav() {
   const guardNav = (e: React.MouseEvent, to: string, roles?: Role[]) => {
     if (!can(roles)) {
       e.preventDefault();
-      setDenyMsg(user
+      const message = user
         ? "Lo siento, no tienes permiso para acceder a esta función."
-        : "Necesitas iniciar sesión para acceder a esta función.");
+        : "Necesitas iniciar sesión para acceder a esta función.";
+      setDenyMsg(message);
+      showToast({
+        tone: user ? "warning" : "danger",
+        title: user ? "Acceso restringido" : "Inicia sesión",
+        message,
+      });
       setDenyOpen(true);
       return;
     }
     e.preventDefault();
+    setMobileOpen(false);
     navigate(to);
   };
 
   const handleLogin = () => {
     setDenyOpen(false);
     navigate("/login");
+  };
+
+  const handleLogout = () => {
+    logout();
+    setMobileOpen(false);
+    showToast({
+      tone: "success",
+      title: "Sesión cerrada",
+      message: "Has salido de Hamari correctamente.",
+    });
   };
 
   return (
@@ -74,27 +100,21 @@ function Nav() {
           <span className="grad-text">Hamari</span>
         </Link>
 
-        <nav style={{
-          display: "flex",
-          gap: 4,
-          alignItems: "center",
-          flexWrap: "wrap",
-          justifyContent: "flex-end",
-        }}>
+        <nav className="desktop-nav">
           <a href="#" className="nav-link" onClick={(e) => guardNav(e, "/offers", ["admin","provider","staff","client"])}>Ofertas</a>
 
           {(user?.role === "provider" || user?.role === "admin") && (
-            <Link to="/offers/new" className="nav-link">Crear oferta</Link>
+            <NavLink to="/offers/new" className={navClass}>Crear oferta</NavLink>
           )}
 
           {(user?.role === "provider" || user?.role === "admin") && (
-            <Link to="/offers/lookup" className="nav-link">
+            <NavLink to="/offers/lookup" className={navClass}>
               {user?.role === "provider" ? "Mis ofertas" : "Consultar ofertas"}
-            </Link>
+            </NavLink>
           )}
 
           {(user?.role === "staff" || user?.role === "admin") && (
-            <Link to="/bookings/lookup" className="nav-link">Consultar reservas</Link>
+            <NavLink to="/bookings/lookup" className={navClass}>Consultar reservas</NavLink>
           )}
 
           {(!user || user?.role === "client") && (
@@ -102,17 +122,17 @@ function Nav() {
           )}
 
           {user?.role === "admin" && (
-            <Link to="/admin/users" className="nav-link">Gestionar usuarios</Link>
+            <NavLink to="/admin/users" className={navClass}>Gestionar usuarios</NavLink>
           )}
 
-          <Link to="/providers" className="nav-link">Proveedores</Link>
-          <Link to="/about" className="nav-link">Sobre nosotros</Link>
+          <NavLink to="/providers" className={navClass}>Proveedores</NavLink>
+          <NavLink to="/about" className={navClass}>Sobre nosotros</NavLink>
 
           <div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.08)", margin: "0 4px" }} />
 
           {!user ? (
             <>
-              <Link to="/register" className="nav-link">Registrarse</Link>
+              <NavLink to="/register" className={navClass}>Registrarse</NavLink>
               <Link to="/login" style={{
                 background: "var(--grad-brand)",
                 color: "#fff",
@@ -125,12 +145,60 @@ function Nav() {
               }}>Login</Link>
             </>
           ) : (
-            <button className="btn-danger" onClick={logout} style={{ padding: "8px 16px", fontSize: "0.85rem" }}>
-              Salir ({user.role})
-            </button>
+            <>
+              <span className="user-pill" title={`Sesión activa como ${user.username}`}>
+                {user.role}
+              </span>
+              <button className="btn-danger" onClick={handleLogout} style={{ padding: "8px 16px", fontSize: "0.85rem" }}>
+                Salir
+              </button>
+            </>
           )}
         </nav>
+
+        <button
+          className="mobile-nav-toggle"
+          type="button"
+          aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen((open) => !open)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
       </div>
+
+      {mobileOpen && (
+        <div className="mobile-nav-backdrop" onClick={() => setMobileOpen(false)}>
+          <nav className="mobile-drawer" onClick={(event) => event.stopPropagation()}>
+            <div className="mobile-drawer-head">
+              <span className="grad-text">Hamari</span>
+              {user && <span className="user-pill">{user.role}</span>}
+            </div>
+
+            <a href="#" className="nav-link" onClick={(e) => guardNav(e, "/offers", ["admin","provider","staff","client"])}>Ofertas</a>
+            {(user?.role === "provider" || user?.role === "admin") && <NavLink to="/offers/new" className={navClass} onClick={() => setMobileOpen(false)}>Crear oferta</NavLink>}
+            {(user?.role === "provider" || user?.role === "admin") && <NavLink to="/offers/lookup" className={navClass} onClick={() => setMobileOpen(false)}>{user?.role === "provider" ? "Mis ofertas" : "Consultar ofertas"}</NavLink>}
+            {(user?.role === "staff" || user?.role === "admin") && <NavLink to="/bookings/lookup" className={navClass} onClick={() => setMobileOpen(false)}>Consultar reservas</NavLink>}
+            {(!user || user?.role === "client") && <a href="#" className="nav-link" onClick={(e) => guardNav(e, "/bookings", ["client"])}>Mis reservas</a>}
+            {user?.role === "admin" && <NavLink to="/admin/users" className={navClass} onClick={() => setMobileOpen(false)}>Gestionar usuarios</NavLink>}
+            <NavLink to="/providers" className={navClass} onClick={() => setMobileOpen(false)}>Proveedores</NavLink>
+            <NavLink to="/about" className={navClass} onClick={() => setMobileOpen(false)}>Sobre nosotros</NavLink>
+
+            <div className="divider" />
+
+            {!user ? (
+              <>
+                <NavLink to="/register" className={navClass} onClick={() => setMobileOpen(false)}>Registrarse</NavLink>
+                <Link to="/login" className="btn-primary" style={{ textAlign: "center", padding: "12px 18px", textDecoration: "none" }} onClick={() => setMobileOpen(false)}>Login</Link>
+              </>
+            ) : (
+              <button className="btn-danger" onClick={handleLogout}>Salir</button>
+            )}
+          </nav>
+        </div>
+      )}
       <Modal
         open={denyOpen}
         onClose={() => setDenyOpen(false)}
@@ -185,10 +253,12 @@ function Footer() {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Nav />
-        <main>
-          <Routes>
+      <ToastProvider>
+        <ConfirmProvider>
+          <BrowserRouter>
+            <Nav />
+            <main>
+              <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/providers" element={<ProvidersPage />} />
@@ -226,10 +296,12 @@ export default function App() {
                 </Link>
               </div>
             } />
-          </Routes>
-        </main>
-        <Footer />
-      </BrowserRouter>
+              </Routes>
+            </main>
+            <Footer />
+          </BrowserRouter>
+        </ConfirmProvider>
+      </ToastProvider>
     </AuthProvider>
   );
 }

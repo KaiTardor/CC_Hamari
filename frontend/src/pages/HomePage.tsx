@@ -80,9 +80,8 @@ export default function HomePage() {
                 49.99€
               </div>
               <span className="badge badge-cyan" style={{ alignSelf: "flex-start" }}>✅ Verificado</span>
-              <Link to="/offers" className="btn-primary" style={{
+              <Link to="/offers" className="btn-primary btn-reserve" style={{
                 marginTop: 6,
-                display: "inline-block",
                 textAlign: "center",
                 padding: "10px 18px",
                 textDecoration: "none",
@@ -93,7 +92,7 @@ export default function HomePage() {
               </Link>
             </div>
             <div style={{ position: "relative", overflow: "hidden" }}>
-              <img src="/acampada.jpg" alt="Acampada" style={{
+              <img src="/acampada.jpg" alt="Acampada" className="anim-zoom-soft" style={{
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
@@ -135,9 +134,8 @@ export default function HomePage() {
                 79.00€
               </div>
               <span className="badge badge-cyan" style={{ alignSelf: "flex-start" }}>✅ Verificado</span>
-              <Link to="/offers" className="btn-primary" style={{
+              <Link to="/offers" className="btn-primary btn-reserve" style={{
                 marginTop: 6,
-                display: "inline-block",
                 textAlign: "center",
                 padding: "10px 18px",
                 textDecoration: "none",
@@ -148,7 +146,7 @@ export default function HomePage() {
               </Link>
             </div>
             <div style={{ position: "relative", overflow: "hidden" }}>
-              <img src="/buceo.jpg" alt="Buceo" style={{
+              <img src="/buceo.jpg" alt="Buceo" className="anim-zoom-soft" style={{
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
@@ -205,9 +203,8 @@ export default function HomePage() {
               <span className="badge badge-cyan">✅ Verificado</span>
               <span className="badge badge-emerald">⚡ Reserva rápida</span>
             </div>
-            <Link to="/offers" className="btn-primary" style={{
+            <Link to="/offers" className="btn-primary btn-reserve" style={{
               marginTop: 4,
-              display: "inline-block",
               textAlign: "center",
               padding: "10px 18px",
               textDecoration: "none",
@@ -218,7 +215,7 @@ export default function HomePage() {
             </Link>
           </div>
           <div style={{ position: "relative", overflow: "hidden" }}>
-            <img src="/playa.jpg" alt="Playa" style={{
+            <img src="/playa.jpg" alt="Playa" className="anim-zoom-soft" style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",

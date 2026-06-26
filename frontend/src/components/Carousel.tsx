@@ -14,6 +14,7 @@ type CarouselProps = {
 
 export default function Carousel({ slides, intervalMs = 4500, height = 480 }: CarouselProps) {
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
   const timerRef = useRef<number | null>(null);
   const safeSlides = useMemo(() => (slides.length > 0 ? slides : [
     { image: "", alt: "Slide 1", caption: "" },
@@ -23,19 +24,24 @@ export default function Carousel({ slides, intervalMs = 4500, height = 480 }: Ca
 
   useEffect(() => {
     if (timerRef.current) window.clearInterval(timerRef.current);
+    if (paused) return;
     timerRef.current = window.setInterval(() => {
       setIndex((i) => (i + 1) % safeSlides.length);
     }, intervalMs) as unknown as number;
     return () => { if (timerRef.current) window.clearInterval(timerRef.current); };
-  }, [safeSlides.length, intervalMs]);
+  }, [safeSlides.length, intervalMs, paused]);
 
   return (
-    <div style={{
-      position: "relative",
-      overflow: "hidden",
-      height,
-      borderRadius: 0,
-    }}>
+    <div
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      style={{
+        position: "relative",
+        overflow: "hidden",
+        height,
+        borderRadius: 0,
+      }}
+    >
       <div
         style={{
           display: "flex",
@@ -99,6 +105,25 @@ export default function Carousel({ slides, intervalMs = 4500, height = 480 }: Ca
           </div>
         ))}
       </div>
+
+      <button
+        className="btn-ghost"
+        type="button"
+        aria-label={paused ? "Reanudar carrusel" : "Pausar carrusel"}
+        onClick={() => setPaused((value) => !value)}
+        style={{
+          position: "absolute",
+          right: 24,
+          bottom: 18,
+          padding: "8px 12px",
+          fontSize: "0.82rem",
+          background: "rgba(14,11,22,0.55)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+        }}
+      >
+        {paused ? "▶ Reanudar" : "Ⅱ Pausar"}
+      </button>
 
       {/* Dots */}
       <div style={{

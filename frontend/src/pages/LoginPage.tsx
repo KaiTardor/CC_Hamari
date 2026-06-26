@@ -69,6 +69,9 @@ export default function LoginPage() {
             color: "var(--color-magenta)",
             fontSize: "0.9rem",
           }}>
+            <strong style={{ display: "block", marginBottom: 2, color: "var(--color-text-light)" }}>
+              No hemos podido entrar
+            </strong>
             {msg}
           </div>
         )}
@@ -122,7 +125,12 @@ export default function LoginPage() {
               width: "100%",
             }}
           >
-            {busy ? "Entrando..." : "Entrar"}
+            {busy ? (
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                Entrando
+                <span className="loading-dots" aria-hidden="true"><span /><span /><span /></span>
+              </span>
+            ) : "Entrar"}
           </button>
 
           <p style={{

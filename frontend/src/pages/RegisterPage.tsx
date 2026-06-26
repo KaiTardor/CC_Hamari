@@ -145,7 +145,12 @@ export default function RegisterPage() {
             disabled={loading}
             style={{ marginTop: 8, padding: "14px 24px", fontSize: "1.05rem", width: "100%" }}
           >
-            {loading ? "Registrando..." : "Crear Cuenta"}
+            {loading ? (
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                Creando cuenta
+                <span className="loading-dots" aria-hidden="true"><span /><span /><span /></span>
+              </span>
+            ) : "Crear Cuenta"}
           </button>
 
           <p style={{ textAlign: "center", color: "var(--color-text-dim)", margin: 0, fontSize: "0.9rem" }}>

@@ -21,6 +21,18 @@ export default function OfferDetailPage() {
     </div>
   );
 
+  const bookingHighlights = [
+    { label: "Confirmación", value: "al momento", detail: "Comprobamos disponibilidad antes de crear tu reserva." },
+    { label: "Grupo", value: offer.people_included ? `${offer.people_included} pers.` : "flexible", detail: "Ideal para planes en pareja, familia o amigos." },
+    { label: "Asistencia", value: "local", detail: "El equipo Hamari te acompaña si necesitas ayuda." },
+  ];
+
+  const previousExperiences = [
+    "Muy buena organización y comunicación antes de la actividad.",
+    "La reserva fue rápida y el proveedor nos esperaba puntualmente.",
+    "Experiencia recomendable para descubrir Málaga de otra forma.",
+  ];
+
   return (
     <div className="container" style={{ padding: "40px 0", maxWidth: 800 }}>
       <div className="card anim-fade-in-up" style={{ padding: 36 }}>
@@ -81,8 +93,42 @@ export default function OfferDetailPage() {
           </div>
         </div>
 
+        <div className="booking-detail-grid" style={{ marginBottom: 28 }}>
+          {bookingHighlights.map((item, index) => (
+            <div key={item.label} className="booking-info-card anim-scale-in" style={{ animationDelay: `${index * 0.06}s` }}>
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+              <p>{item.detail}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="booking-journey" style={{ marginBottom: 28 }}>
+          <div>
+            <span className="badge badge-emerald">Reserva segura</span>
+            <h2>Así será tu experiencia</h2>
+          </div>
+          <div className="booking-steps">
+            <span>1. Elige fecha</span>
+            <span>2. Confirmamos plaza</span>
+            <span>3. Disfruta la experiencia</span>
+          </div>
+        </div>
+
+        <div className="experience-strip" style={{ marginBottom: 30 }}>
+          <div>
+            <span className="eyebrow">Experiencias anteriores</span>
+            <h2>Lo que suelen destacar otros viajeros</h2>
+          </div>
+          <div className="experience-quotes">
+            {previousExperiences.map((quote) => (
+              <blockquote key={quote}>{quote}</blockquote>
+            ))}
+          </div>
+        </div>
+
         <button
-          className="btn-primary"
+          className="btn-primary btn-reserve"
           onClick={() => setOpen(true)}
           style={{
             width: "100%",

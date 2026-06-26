@@ -21,7 +21,10 @@ export default function BookingModal({
     if (!dateISO || !dni) { setMsg("Rellena fecha y DNI."); setBusy(false); return; }
     const date = toDDMMYYYY(dateISO);
 
-    try { await fetchAvailability(offerId, date); }
+    try {
+      setMsg("Comprobando disponibilidad...");
+      await fetchAvailability(offerId, date);
+    }
     catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } }; message?: string };
       setMsg(e.response?.data?.error ?? e.message ?? "Sin disponibilidad.");
@@ -31,7 +34,7 @@ export default function BookingModal({
 
     try {
       await createBooking({ offer_id: offerId, client_dni: dni, date });
-      setMsg("✅ Reserva creada");
+      setMsg("✅ Reserva creada. Cerrando confirmación...");
       setTimeout(() => onClose(true), 800);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: string } }; message?: string };
@@ -150,7 +153,12 @@ export default function BookingModal({
             disabled={busy}
             style={{ padding: "10px 24px", fontWeight: 700 }}
           >
-            {busy ? "Reservando..." : "Confirmar Reserva"}
+            {busy ? (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                Reservando
+                <span className="loading-dots" aria-hidden="true"><span /><span /><span /></span>
+              </span>
+            ) : "Confirmar Reserva"}
           </button>
         </div>
       </div>

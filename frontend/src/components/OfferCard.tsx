@@ -6,6 +6,11 @@ export default function OfferCard({ offer }: { offer: Offer }) {
   return (
     <div
       className="card"
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        e.currentTarget.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+        e.currentTarget.style.setProperty("--my", `${e.clientY - rect.top}px`);
+      }}
       style={{
         overflow: "hidden",
         display: "flex",
@@ -110,7 +115,7 @@ export default function OfferCard({ offer }: { offer: Offer }) {
             fontWeight: 600,
           }}
         >
-          Ver oferta
+          Ver oferta →
         </a>
       </div>
     </div>
